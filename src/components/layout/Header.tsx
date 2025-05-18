@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import LoginModal from '../auth/LoginModal';
+import { createThirdwebClient } from 'thirdweb';
+import { ConnectButton } from 'thirdweb/react';
+import { inAppWallet, createWallet } from 'thirdweb/wallets';
 
 interface HeaderProps {
   onNavigate: (path: string) => void;
@@ -11,10 +13,15 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  const client = createThirdwebClient({
+    clientId: (import.meta as any).env.VITE_THIRDWEB_CLIENT_ID || ''
+  });
+
+  const wallets = [inAppWallet(), createWallet('io.metamask')];
 
   const isActive = (path: string) => currentPath === path;
 
@@ -148,16 +155,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowLoginModal(true)}
-                >
-                  Login
-                </Button>
-                <Button variant="primary" size="sm">
-                  Sign up
-                </Button>
+                <ConnectButton client={client} wallets={wallets} />
               </div>
             )}
           </div>
@@ -255,25 +253,11 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             </div>
           ) : (
             <div className="px-4 py-3 border-t border-gray-200 space-y-2">
-              <Button
-                variant="outline"
-                fullWidth
-                onClick={() => {
-                  setShowLoginModal(true);
-                  setIsMenuOpen(false);
-                }}
-              >
-                Login
-              </Button>
-              <Button variant="primary" fullWidth>
-                Sign up
-              </Button>
+              <ConnectButton client={client} wallets={wallets} />
             </div>
           )}
         </div>
       )}
-
-      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </header>
   );
 };

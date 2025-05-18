@@ -15,7 +15,10 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "viem": "^1.21.4",
-    "wagmi": "^1.4.13"
+    "wagmi": "^1.4.13",
+    "thirdweb": "*",
+    "thirdweb/react": "*",
+    "thirdweb/wallets": "*"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

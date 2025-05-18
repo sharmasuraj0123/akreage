@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-
-// Mock icons (replace with lucide-react or similar if available in your project)
-const CircleDollarSign = () => <span className="inline-block w-6 h-6 bg-blue-200 rounded-full" />;
-const Users = () => <span className="inline-block w-6 h-6 bg-blue-200 rounded-full" />;
-const Vote = () => <span className="inline-block w-6 h-6 bg-blue-200 rounded-full" />;
-const Check = () => <span className="inline-block w-4 h-4 bg-green-200 rounded-full" />;
-const Clock = () => <span className="inline-block w-4 h-4 bg-gray-200 rounded-full" />;
-const ArrowLeft = () => <span className="inline-block w-5 h-5 bg-gray-200 rounded-full mr-1" />;
-const Building2 = () => <span className="inline-block w-6 h-6 bg-blue-200 rounded-full" />;
-const Calendar = () => <span className="inline-block w-6 h-6 bg-blue-200 rounded-full" />;
+import {
+  CircleDollarSign,
+  Users,
+  ThumbsUp,
+  Check,
+  Clock,
+  ArrowLeft,
+  Building2,
+  Calendar,
+} from 'lucide-react';
 
 const stats = [
   {
@@ -28,7 +28,7 @@ const stats = [
   {
     name: 'Pending Votes',
     value: '3',
-    icon: Vote,
+    icon: ThumbsUp,
     change: '-1',
     changeType: 'negative',
   },
@@ -72,7 +72,7 @@ const Stats = () => (
             <p className="text-sm text-gray-600">{stat.name}</p>
             <p className="text-2xl font-semibold mt-1">{stat.value}</p>
           </div>
-          <div className={`p-3 rounded-full bg-blue-50`}>
+          <div className={`p-3 rounded-full bg-indigo-50`}>
             <stat.icon />
           </div>
         </div>
@@ -119,7 +119,7 @@ const CountdownClock: React.FC<{ deadline: string }> = ({ deadline }) => {
     </span>
   );
   return (
-    <span className="ml-3 text-lg font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded flex items-center">
+    <span className="ml-3 text-lg font-semibold text-indigo-700 bg-indigo-100 px-3 py-1 rounded flex items-center">
       <Clock />
       <span className="ml-1">
         {timeLeft.days > 0 && `${timeLeft.days}d `}
@@ -216,7 +216,7 @@ const GovernancePage: React.FC = () => {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-indigo-50 rounded-lg">
                   <Building2 />
                 </div>
                 <div>
@@ -225,7 +225,7 @@ const GovernancePage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-indigo-50 rounded-lg">
                   <CircleDollarSign />
                 </div>
                 <div>
@@ -234,7 +234,7 @@ const GovernancePage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-indigo-50 rounded-lg">
                   <Calendar />
                 </div>
                 <div>
@@ -264,7 +264,7 @@ const GovernancePage: React.FC = () => {
               </div>
               <div className="flex flex-col gap-2">
                 <textarea
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   rows={2}
                   placeholder="Write a comment..."
                   value={newComment}
@@ -273,7 +273,7 @@ const GovernancePage: React.FC = () => {
                 />
                 <div className="flex justify-end">
                   <button
-                    className={`px-4 py-1.5 rounded-lg font-medium transition-colors ${newComment.trim() ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                    className={`px-4 py-1.5 rounded-lg font-medium transition-colors ${newComment.trim() ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                     disabled={!newComment.trim() || posting}
                     onClick={() => {
                       if (!newComment.trim()) return;
@@ -318,7 +318,7 @@ const GovernancePage: React.FC = () => {
                       setRejectionReason('');
                       setRejectionTouched(false);
                     }}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                     disabled={hasVoted || showNotification}
                   />
                   <span className="text-gray-900 font-medium">Approve Milestone</span>
@@ -334,7 +334,7 @@ const GovernancePage: React.FC = () => {
                       setRejectionReason('');
                       setRejectionTouched(false);
                     }}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                     disabled={hasVoted || showNotification}
                   />
                   <span className="text-gray-900 font-medium">Reject Milestone</span>
@@ -342,7 +342,7 @@ const GovernancePage: React.FC = () => {
                 {vote === 'reject' && !hasVoted && !showNotification && (
                   <div className="mt-2">
                     <textarea
-                      className={`w-full border rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${rejectionTouched && !rejectionReason.trim() ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full border rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${rejectionTouched && !rejectionReason.trim() ? 'border-red-500' : 'border-gray-300'}`}
                       rows={3}
                       placeholder="Please explain the reason for rejection..."
                       value={rejectionReason}
@@ -359,7 +359,7 @@ const GovernancePage: React.FC = () => {
                   onClick={handleVoteSubmit}
                   className={`mt-4 px-6 py-2 rounded-lg font-medium ${
                     vote && !hasVoted && !showNotification && (vote !== 'reject' || rejectionReason.trim())
-                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   } transition-colors`}
                   disabled={
@@ -384,7 +384,7 @@ const GovernancePage: React.FC = () => {
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
-            <span className="inline-block w-6 h-6 bg-blue-200 rounded-full" />
+            <span className="inline-block w-6 h-6 bg-indigo-200 rounded-full" />
             <h2 className="text-xl font-semibold">Pending Approvals</h2>
           </div>
           <span className="text-sm text-gray-500">Showing {pendingApprovals.length} projects</span>
@@ -394,7 +394,7 @@ const GovernancePage: React.FC = () => {
             const hasVoted = votedProposals[approval.id] || approval.hasVoted;
             return (
               <div key={approval.id} className="block group cursor-pointer" onClick={() => handleProposalClick(approval.id)}>
-                <div className="border border-gray-200 rounded-xl p-5 hover:border-blue-500 transition-all duration-200 hover:shadow-md relative">
+                <div className="border border-gray-200 rounded-xl p-5 hover:border-indigo-500 transition-all duration-200 hover:shadow-md relative">
                   {hasVoted && (
                     <div className="absolute top-4 right-4 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium flex items-center">
                       <Check />
@@ -418,7 +418,7 @@ const GovernancePage: React.FC = () => {
                     <div className="flex-grow">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
                             {approval.projectName}
                           </h3>
                           <p className="text-sm text-gray-600 mt-1">{approval.developerName}</p>
@@ -438,7 +438,7 @@ const GovernancePage: React.FC = () => {
                           </div>
                           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div 
-                              className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                              className="h-full bg-indigo-500 rounded-full transition-all duration-500"
                               style={{ width: `${(approval.votesReceived / approval.totalCouncilMembers) * 100}%` }}
                             />
                           </div>

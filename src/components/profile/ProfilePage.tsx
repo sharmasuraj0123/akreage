@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Gift, Calendar, Edit, Save, X, Wallet } from 'lucide-react';
+import { User, Mail, Gift, Calendar, Edit, Save, X, Wallet, DollarSign } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
 import PortfolioDashboard from '../portfolio/PortfolioDashboard';
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated, walletAddress, connectWallet } = useAuth();
+  const { user, isAuthenticated, walletAddress, connectWallet, portfolio } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileForm, setProfileForm] = useState({
     name: '',
     bio: ''
   });
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    // More detailed debug logs
+    console.log('ProfilePage Auth State:', { 
+      isAuthenticated, 
+      hasUser: !!user, 
+      user, 
+      walletAddress,
+      hasPortfolio: !!portfolio
+    });
+    
     if (user) {
       setProfileForm({
         name: user.name,
@@ -24,15 +34,30 @@ const ProfilePage: React.FC = () => {
     const ensureWalletConnection = async () => {
       if (isAuthenticated && !walletAddress) {
         try {
-          await connectWallet();
+          console.log('Attempting to connect wallet from ProfilePage');
+          const result = await connectWallet();
+          console.log('Wallet connection result:', result);
         } catch (error) {
           console.error("Error connecting wallet:", error);
         }
       }
+      
+      // If we're authenticated but have no user data after 2 seconds, try forcing a refresh
+      setTimeout(() => {
+        if (isAuthenticated && !user) {
+          console.log('Still no user data after timeout, manually refreshing');
+          // This will trigger the component to re-render which might help 
+          // if there's a timing issue with the auth context
+          setIsLoading(false);
+          window.location.reload(); // Force refresh as last resort
+        }
+      }, 2000);
+      
+      setIsLoading(false);
     };
     
     ensureWalletConnection();
-  }, [user, isAuthenticated, walletAddress, connectWallet]);
+  }, [user, isAuthenticated, walletAddress, connectWallet, portfolio]);
   
   const handleEditToggle = () => {
     if (isEditing) {
@@ -62,12 +87,36 @@ const ProfilePage: React.FC = () => {
     setIsEditing(false);
   };
   
-  if (!isAuthenticated || !user) {
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Loading profile...</h2>
+        </div>
+      </div>
+    );
+  }
+  
+  // Only check for isAuthenticated since user might be null momentarily
+  if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Please login to view your profile</h2>
           <p className="text-gray-600 mb-6">You need to be logged in to access your profile information.</p>
+          <Button onClick={connectWallet}>Connect Wallet</Button>
+        </div>
+      </div>
+    );
+  }
+  
+  // If authenticated but no user object yet, show a loading state
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Loading profile data...</h2>
         </div>
       </div>
     );
@@ -188,11 +237,11 @@ const ProfilePage: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <p className="text-gray-500 text-sm">Investments</p>
-                <p className="text-2xl font-bold text-indigo-600">1</p>
+                <p className="text-2xl font-bold text-indigo-600">{portfolio?.totalInvestments || 0}</p>
               </div>
               <div className="text-center p-3 bg-gray-50 rounded-lg">
                 <p className="text-gray-500 text-sm">Returns</p>
-                <p className="text-2xl font-bold text-green-600">+8.5%</p>
+                <p className="text-2xl font-bold text-green-600">+{portfolio?.returns || 0}%</p>
               </div>
             </div>
           </div>
@@ -203,35 +252,37 @@ const ProfilePage: React.FC = () => {
           <PortfolioDashboard />
           
           {/* Transaction History */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 mt-6">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-xl font-bold text-gray-900">Transaction History</h2>
             </div>
             
             <div className="divide-y divide-gray-100">
-              {/* If no transactions */}
-              <div className="p-6 text-center">
-                <p className="text-gray-500">No transactions found</p>
-              </div>
-              
-              {/* Example transaction - would be mapped from real data */}
-              {/*
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="bg-green-100 p-2 rounded-full mr-3">
-                    <DollarSign className="h-5 w-5 text-green-600" />
+              {portfolio?.transactions && portfolio.transactions.length > 0 ? (
+                portfolio.transactions.map(transaction => (
+                  <div key={transaction.id} className="p-4 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`bg-${transaction.type === 'buy' ? 'green' : 'red'}-100 p-2 rounded-full mr-3`}>
+                        <DollarSign className={`h-5 w-5 text-${transaction.type === 'buy' ? 'green' : 'red'}-600`} />
+                      </div>
+                      <div>
+                        <p className="font-medium">{transaction.type === 'buy' ? 'Purchased' : 'Sold'} tokens of {transaction.propertyName}</p>
+                        <p className="text-sm text-gray-500">{transaction.date}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-medium text-${transaction.type === 'buy' ? 'green' : 'red'}-600`}>
+                        {transaction.type === 'buy' ? '+' : '-'} tokens
+                      </p>
+                      <p className="text-sm text-gray-500">{transaction.amount} AUSD</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Purchased 5 tokens of Skyline Tower</p>
-                    <p className="text-sm text-gray-500">May 15, 2023</p>
-                  </div>
+                ))
+              ) : (
+                <div className="p-6 text-center">
+                  <p className="text-gray-500">No transactions found</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-green-600">+5 tokens</p>
-                  <p className="text-sm text-gray-500">5,000 AUSD</p>
-                </div>
-              </div>
-              */}
+              )}
             </div>
           </div>
         </div>

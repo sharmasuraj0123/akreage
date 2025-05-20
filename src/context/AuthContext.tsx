@@ -67,8 +67,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Initialize state from storage on mount
   useEffect(() => {
     const initAuthState = async () => {
+      console.log('AuthContext: Initializing auth state');
       // First check our blockchain connection
       const isConnected = await isUserConnected();
+      console.log('AuthContext: Blockchain connection status:', isConnected);
       
       if (isConnected) {
         // We're connected via blockchain utils
@@ -79,14 +81,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (savedSession) {
           try {
             const parsed = JSON.parse(savedSession);
+            console.log('AuthContext: Found saved session data', parsed);
             if (parsed.user) {
               setUser(parsed.user);
               setPortfolio(parsed.portfolio || mockPortfolio);
               setWalletAddress(parsed.user.id);
+              console.log('AuthContext: Restored user from session:', parsed.user);
             }
           } catch (error) {
             console.error("Error parsing saved session:", error);
             sessionStorage.removeItem(AUTH_SESSION_KEY);
+          }
+        } else {
+          // We're connected but have no session data
+          // Let's create a fallback user if the account is available
+          console.log('AuthContext: Connected but no session data. Checking account...');
+          if (account) {
+            console.log('AuthContext: Creating fallback user from account', account);
+            const userProfile: UserProfile = {
+              id: account.address,
+              name: 'Connected User',
+              email: '',
+              avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+              walletBalance: 25000,
+            };
+            
+            setUser(userProfile);
+            setPortfolio(mockPortfolio);
+            setWalletAddress(account.address);
+            
+            // Save to session
+            sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+              user: userProfile,
+              portfolio: mockPortfolio
+            }));
+          } else {
+            // We need to get the account from blockchain utils since we're connected
+            console.log('AuthContext: No account yet. Fetching account from blockchain...');
+            try {
+              const obtainedAccount = await connectUserWallet();
+              if (obtainedAccount) {
+                console.log('AuthContext: Got account from blockchain', obtainedAccount);
+                // Create user profile 
+                const userProfile: UserProfile = {
+                  id: obtainedAccount.address,
+                  name: 'Connected User',
+                  email: '',
+                  avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+                  walletBalance: 25000,
+                };
+                
+                setUser(userProfile);
+                setPortfolio(mockPortfolio);
+                setWalletAddress(obtainedAccount.address);
+                
+                // Save to session
+                sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                  user: userProfile,
+                  portfolio: mockPortfolio
+                }));
+              }
+            } catch (error) {
+              console.error("Error getting account from blockchain:", error);
+            }
           }
         }
       } else {
@@ -94,15 +151,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (wallet && account) {
           // Connected via ThirdWeb but not in our state
           // Update our connection tracking
+          console.log('AuthContext: Connected via ThirdWeb but not in our blockchain state');
           try {
             await connectUserWallet();
             setIsAuthenticated(true);
             setWalletAddress(account.address);
+            
+            // Create user profile from ThirdWeb account
+            console.log('AuthContext: Creating user from ThirdWeb account');
+            const userProfile: UserProfile = {
+              id: account.address,
+              name: 'Connected User',
+              email: '',
+              avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+              walletBalance: 25000,
+            };
+            
+            setUser(userProfile);
+            setPortfolio(mockPortfolio);
+            
+            // Save to session
+            sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+              user: userProfile,
+              portfolio: mockPortfolio
+            }));
           } catch (error) {
             console.error("Error syncing wallet state:", error);
           }
         } else {
           // Not connected anywhere
+          console.log('AuthContext: Not connected anywhere. Clearing state.');
           setIsAuthenticated(false);
           setUser(null);
           setPortfolio(null);
@@ -125,7 +203,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Update user profile when authentication state changes
   useEffect(() => {
+    console.log('AuthContext: authentication state change detected', { isAuthenticated, account });
+    
     if (isAuthenticated && account) {
+      console.log('AuthContext: Creating user profile from account', account);
       // Create user profile from account data
       const userProfile: UserProfile = {
         id: account.address,
@@ -135,6 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         walletBalance: 25000, // Mock wallet balance
       };
       
+      console.log('AuthContext: Setting user profile', userProfile);
       setUser(userProfile);
       setPortfolio(mockPortfolio);
       setWalletAddress(account.address);
@@ -144,8 +226,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user: userProfile,
         portfolio: mockPortfolio
       }));
+      console.log('AuthContext: Saved user session to storage');
     } else if (!isAuthenticated) {
       // Clear user data if not authenticated
+      console.log('AuthContext: Not authenticated, clearing user data');
       setUser(null);
       setPortfolio(null);
       setWalletAddress(null);
@@ -159,9 +243,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       setIsConnecting(true);
+      console.log('AuthContext: Connecting wallet...');
       const account = await connectUserWallet();
+      console.log('AuthContext: Wallet connected, account:', account);
       setIsAuthenticated(true);
       setWalletAddress(account.address);
+      
+      // Make sure we also create the user profile if it doesn't exist
+      if (!user) {
+        console.log('AuthContext: No user exists, creating from connected wallet');
+        const userProfile: UserProfile = {
+          id: account.address,
+          name: 'Connected User',
+          email: '',
+          avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+          walletBalance: 25000,
+        };
+        
+        setUser(userProfile);
+        setPortfolio(mockPortfolio);
+        
+        // Save to session
+        sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+          user: userProfile,
+          portfolio: mockPortfolio
+        }));
+        console.log('AuthContext: Created and saved new user profile');
+      }
+      
       return account;
     } catch (error) {
       console.error("Error connecting wallet:", error);

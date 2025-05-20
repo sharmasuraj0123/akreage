@@ -34,6 +34,5 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   user: UserProfile | null;
   portfolio: Portfolio | null;
-  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }

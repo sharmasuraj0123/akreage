@@ -1,14 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserProfile, Portfolio, AuthContextType } from '../types/auth';
-
-// Mock user data
-const mockUser: UserProfile = {
-  id: '1',
-  name: 'John Doe',
-  email: 'john@example.com',
-  avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-  walletBalance: 25000,
-};
+import { useActiveAccount, useActiveWallet, useActiveWalletConnectionStatus, useDisconnect } from "thirdweb/react";
 
 // Mock portfolio data
 const mockPortfolio: Portfolio = {
@@ -49,28 +41,45 @@ const mockPortfolio: Portfolio = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<UserProfile | null>(null);
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  
+  // Use hooks from thirdweb
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const wallet = useActiveWallet();
+  const account = useActiveAccount();
+  const { disconnect } = useDisconnect();
+  
+  const isAuthenticated = connectionStatus === 'connected' && !!account;
+  const [user, setUser] = useState<UserProfile | null>(null);
 
-  const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In a real app, validate credentials here
-    setUser(mockUser);
-    setPortfolio(mockPortfolio);
-    setIsAuthenticated(true);
-  };
+  useEffect(() => {
+    if (isAuthenticated && account) {
+      // Create user profile from account data
+      const userProfile: UserProfile = {
+        id: account.address,
+        name: 'Connected User',
+        email: '',  // We may not have access to email directly
+        avatar: 'https://randomuser.me/api/portraits/men/1.jpg', // Default avatar 
+        walletBalance: 25000, // Mock wallet balance
+      };
+      
+      setUser(userProfile);
+      setPortfolio(mockPortfolio);
+    } else {
+      setUser(null);
+      setPortfolio(null);
+    }
+  }, [isAuthenticated, account]);
 
+  // Logout function using thirdweb
   const logout = () => {
-    setUser(null);
-    setPortfolio(null);
-    setIsAuthenticated(false);
+    if (wallet) {
+      disconnect(wallet);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, portfolio, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, portfolio, logout }}>
       {children}
     </AuthContext.Provider>
   );

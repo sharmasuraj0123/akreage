@@ -2,7 +2,33 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import LoginModal from '../auth/LoginModal';
+import { ConnectButton,  } from "thirdweb/react";
+import { inAppWallet, createWallet, getUserEmail, getWalletBalance } from "thirdweb/wallets";
+import { client } from '../../lib/client';
+import { sepolia } from 'thirdweb/chains';
+import { getOwnedTokenIds } from 'thirdweb/extensions/erc721';
+
+const wallets = [
+  inAppWallet({
+    auth: {
+      options: [
+        "google",
+        "discord",
+        "telegram",
+        "farcaster",
+        "email",
+        "x",
+        "passkey",
+        "phone",
+      ],
+    },
+  }),
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("me.rainbow"),
+  createWallet("io.rabby"),
+  createWallet("io.zerion.wallet"),
+];
 
 interface HeaderProps {
   onNavigate: (path: string) => void;
@@ -11,7 +37,6 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -148,16 +173,14 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowLoginModal(true)}
-                >
-                  Login
-                </Button>
-                <Button variant="primary" size="sm">
-                  Sign up
-                </Button>
+                <ConnectButton
+                  client={client}
+                  connectButton={{
+                    label: "Login"
+                  }}
+                  wallets={wallets}
+                  connectModal={{ size: "compact" }}
+                />
               </div>
             )}
           </div>
@@ -255,25 +278,15 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             </div>
           ) : (
             <div className="px-4 py-3 border-t border-gray-200 space-y-2">
-              <Button
-                variant="outline"
-                fullWidth
-                onClick={() => {
-                  setShowLoginModal(true);
-                  setIsMenuOpen(false);
-                }}
-              >
-                Login
-              </Button>
-              <Button variant="primary" fullWidth>
-                Sign up
-              </Button>
+              <ConnectButton
+                client={client}
+                wallets={wallets}
+                connectModal={{ size: "compact" }}
+              />
             </div>
           )}
         </div>
       )}
-
-      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </header>
   );
 };

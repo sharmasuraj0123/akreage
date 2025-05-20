@@ -40,6 +40,7 @@ export interface RealEstateAsset {
   fundingRaised: number; // Raised in AUSD
   fundingDeadline: string;
   tokenSymbol: string;
+  nftContractAddress?: string,
   milestones?: Milestone[]; // Add milestones here
   documents?: Document[]; // Add documents here
 }

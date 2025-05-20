@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import Button from '../ui/Button';
 import { formatCurrency } from '../../utils/formatters';
-import { getClaimConditionData, isUserConnected, connectUserWallet } from '../../utils/blockchain';
+import { getClaimConditionData, connectUserWallet } from '../../utils/blockchain';
+import { useAuth } from '../../context/AuthContext';
 
 interface FundingCardProps {
   tokenSymbol: string;
@@ -23,6 +24,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
   projectName,
   onInvest
 }) => {
+  const { isAuthenticated } = useAuth();
   const [claimData, setClaimData] = useState<{
     maxClaimableSupply: bigint;
     supplyClaimed: bigint;
@@ -30,7 +32,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
   const [isLoading, setIsLoading] = useState(!!nftContractAddress);
   const [isUserWalletConnected, setIsUserWalletConnected] = useState(false);
   
-  // Calculate funding percentage based on either blockchain data or mock data
+  // Calculate funding percentage based on raised amount and goal
   const fundingPercentage = claimData 
     ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
     : (initialFundingRaised / initialFundingGoal) * 100;
@@ -53,15 +55,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
     (new Date(fundingDeadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   ));
   
-  // Check if user is connected on component mount
+  // Check auth status from context
   useEffect(() => {
-    const checkConnection = async () => {
-      const connected = await isUserConnected();
-      setIsUserWalletConnected(connected);
-    };
-    
-    checkConnection();
-  }, []);
+    setIsUserWalletConnected(isAuthenticated);
+  }, [isAuthenticated]);
   
   // Fetch blockchain data if nftContractAddress is available
   useEffect(() => {
@@ -95,7 +92,10 @@ const FundingCard: React.FC<FundingCardProps> = ({
     if (!isUserWalletConnected) {
       try {
         await connectUserWallet();
-        setIsUserWalletConnected(true);
+        // Wait briefly for auth context to update
+        setTimeout(() => {
+          setIsUserWalletConnected(true);
+        }, 500);
       } catch (error) {
         console.error("Error connecting wallet:", error);
       }

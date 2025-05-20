@@ -2,27 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import { ClaimButton, ConnectButton,  } from "thirdweb/react";
-import { inAppWallet, createWallet, getUserEmail, getWalletBalance } from "thirdweb/wallets";
-import { client } from '../../lib/client';
+import { ClaimButton, ConnectButton } from "thirdweb/react";
+import { createWallet } from "thirdweb/wallets";
 import { sepolia } from 'thirdweb/chains';
 import { getOwnedTokenIds } from 'thirdweb/extensions/erc721';
 
 const wallets = [
-  inAppWallet({
-    auth: {
-      options: [
-        "google",
-        "discord",
-        "telegram",
-        "farcaster",
-        "email",
-        "x",
-        "passkey",
-        "phone",
-      ],
-    },
-  }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
   createWallet("me.rainbow"),
@@ -38,7 +23,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, client, connectWallet } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => currentPath === path;
@@ -110,6 +95,14 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
     </div>
   );
 
+  const handleLogin = async () => {
+    try {
+      await connectWallet();
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -175,14 +168,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <ConnectButton
-                  client={client}
-                  connectButton={{
-                    label: "Login"
-                  }}
-                  wallets={wallets}
-                  connectModal={{ size: "compact" }}
-                />
+                <Button 
+                  className="bg-indigo-600 text-white hover:bg-indigo-700" 
+                  onClick={handleLogin}
+                >
+                  Login
+                </Button>
               </div>
             )}
           </div>
@@ -247,44 +238,39 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
               
               <div className="space-y-1">
                 <button
-                  onClick={() => {
-                    onNavigate('/profile');
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+                  onClick={() => { onNavigate('/profile'); setIsMenuOpen(false); }}
+                  className="block w-full text-left px-3 py-2 text-sm rounded-md text-gray-700 hover:bg-gray-50"
                 >
-                  <User className="h-4 w-4 mr-2" />
                   Profile
                 </button>
                 <button
-                  onClick={() => {
-                    onNavigate('/settings');
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+                  onClick={() => { onNavigate('/settings'); setIsMenuOpen(false); }}
+                  className="block w-full text-left px-3 py-2 text-sm rounded-md text-gray-700 hover:bg-gray-50"
                 >
-                  <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={() => { 
                     logout();
-                    setIsMenuOpen(false);
+                    setIsMenuOpen(false); 
                   }}
-                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
+                  className="block w-full text-left px-3 py-2 text-sm rounded-md text-red-600 hover:bg-gray-50"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
                   Sign out
                 </button>
               </div>
             </div>
           ) : (
-            <div className="px-4 py-3 border-t border-gray-200 space-y-2">
-              <ConnectButton
-                client={client}
-                wallets={wallets}
-                connectModal={{ size: "compact" }}
-              />
+            <div className="px-4 py-3 border-t border-gray-200">
+              <Button 
+                className="w-full justify-center bg-indigo-600 text-white hover:bg-indigo-700" 
+                onClick={() => {
+                  handleLogin();
+                  setIsMenuOpen(false);
+                }}
+              >
+                Login
+              </Button>
             </div>
           )}
         </div>

@@ -7,6 +7,17 @@ const client = createThirdwebClient({
   clientId: "a32954d2274ff167331b829df4fd8e25",
 });
 
+// Keys for local storage
+const WALLET_CONNECTED_KEY = 'akreage_wallet_connected';
+const WALLET_ADDRESS_KEY = 'akreage_wallet_address';
+
+// Track connection state in memory and localStorage
+let userConnected = localStorage.getItem(WALLET_CONNECTED_KEY) === 'true';
+// Store the connected account to reuse it
+// We're using 'any' type here because the exact account type from thirdweb isn't easily accessible
+// This represents a wallet account with at least an 'address' property
+let connectedAccount: any = null;
+
 /**
  * Get claim condition data for an NFT contract.
  * This includes total supply, claimed tokens, price, and currency.
@@ -81,10 +92,29 @@ export async function getClaimConditionData(contractAddress: string) {
  */
 export async function getUserWalletBalance() {
   try {
+    // If we already have a connected account, use it
+    if (userConnected && connectedAccount) {
+      const address = connectedAccount.address;
+      const balance = await getWalletBalance({
+        address,
+        client,
+        chain: sepolia
+      });
+      return { balance, address, account: connectedAccount };
+    }
+    
+    // Otherwise create a new connection
     const wallet = inAppWallet();
     const account = await wallet.connect({ client, strategy: "google" });
-    const address = account.address;
+    // Store it for future use
+    connectedAccount = account;
+    userConnected = true;
     
+    // Store in localStorage
+    localStorage.setItem(WALLET_CONNECTED_KEY, 'true');
+    localStorage.setItem(WALLET_ADDRESS_KEY, account.address);
+    
+    const address = account.address;
     const balance = await getWalletBalance({
       address,
       client,
@@ -108,9 +138,23 @@ export async function executeNFTClaim(contractAddress: string, quantity: bigint)
       throw new Error("Quantity must be a multiple of 5");
     }
 
-    // Connect wallet and get user info
-    const wallet = inAppWallet();
-    const account = await wallet.connect({ client, strategy: "google" });
+    // Connect wallet or reuse existing connection
+    let account;
+    if (userConnected && connectedAccount) {
+      account = connectedAccount;
+      console.log("Using existing wallet connection");
+    } else {
+      const wallet = inAppWallet();
+      account = await wallet.connect({ client, strategy: "google" });
+      userConnected = true;
+      connectedAccount = account;
+      console.log("Created new wallet connection");
+      
+      // Store in localStorage
+      localStorage.setItem(WALLET_CONNECTED_KEY, 'true');
+      localStorage.setItem(WALLET_ADDRESS_KEY, account.address);
+    }
+    
     const address = account.address;
 
     // Get user balance
@@ -232,14 +276,42 @@ export async function executeNFTClaim(contractAddress: string, quantity: bigint)
   }
 }
 
-// Track connection state in memory (this is a simplified approach)
-let userConnected = false;
-
 /**
  * Check if user is connected to wallet
  */
 export async function isUserConnected() {
-  return userConnected;
+  // First check localStorage
+  const storedConnected = localStorage.getItem(WALLET_CONNECTED_KEY) === 'true';
+  const storedAddress = localStorage.getItem(WALLET_ADDRESS_KEY);
+  
+  // If we have stored connection info and in-memory account, use it
+  if (storedConnected && storedAddress && connectedAccount) {
+    return true;
+  }
+  
+  // If we have stored connection but no in-memory account, try to recover it
+  if (storedConnected && storedAddress && !connectedAccount) {
+    try {
+      // Try to reconnect silently using the stored info
+      const wallet = inAppWallet();
+      connectedAccount = await wallet.connect({ 
+        client, 
+        strategy: "google"
+        // ThirdWeb doesn't support silent reconnection directly
+      });
+      userConnected = true;
+      return true;
+    } catch (error) {
+      console.error("Failed to reconnect:", error);
+      // Clear invalid stored state
+      localStorage.removeItem(WALLET_CONNECTED_KEY);
+      localStorage.removeItem(WALLET_ADDRESS_KEY);
+      userConnected = false;
+      return false;
+    }
+  }
+  
+  return false;
 }
 
 /**
@@ -247,15 +319,76 @@ export async function isUserConnected() {
  */
 export async function connectUserWallet() {
   try {
+    // If user is already connected, reuse the existing account
+    if (userConnected && connectedAccount) {
+      console.log("User already connected, reusing account");
+      return connectedAccount;
+    }
+    
+    // If we have stored data but no active connection, try to reconnect
+    const storedConnected = localStorage.getItem(WALLET_CONNECTED_KEY) === 'true';
+    const storedAddress = localStorage.getItem(WALLET_ADDRESS_KEY);
+    
+    if (storedConnected && storedAddress) {
+      try {
+        console.log("Attempting reconnect using stored credentials");
+        const wallet = inAppWallet();
+        connectedAccount = await wallet.connect({ 
+          client, 
+          strategy: "google"
+        });
+        userConnected = true;
+        
+        // Update localStorage
+        localStorage.setItem(WALLET_CONNECTED_KEY, 'true');
+        localStorage.setItem(WALLET_ADDRESS_KEY, connectedAccount.address);
+        
+        return connectedAccount;
+      } catch (error) {
+        console.error("Reconnect failed, proceeding with normal connection");
+        // Clear invalid stored state
+        localStorage.removeItem(WALLET_CONNECTED_KEY);
+        localStorage.removeItem(WALLET_ADDRESS_KEY);
+      }
+    }
+    
+    // Otherwise, create a new connection
     const wallet = inAppWallet();
-    const account = await wallet.connect({ client, strategy: "google" });
+    // Store the account for future reuse across the session
+    connectedAccount = await wallet.connect({ 
+      client, 
+      strategy: "google"
+    });
     userConnected = true;
-    return account;
+    
+    // Store in localStorage
+    localStorage.setItem(WALLET_CONNECTED_KEY, 'true');
+    localStorage.setItem(WALLET_ADDRESS_KEY, connectedAccount.address);
+    
+    return connectedAccount;
   } catch (error) {
     console.error("Error connecting wallet:", error);
     userConnected = false;
+    connectedAccount = null;
+    
+    // Clear localStorage
+    localStorage.removeItem(WALLET_CONNECTED_KEY);
+    localStorage.removeItem(WALLET_ADDRESS_KEY);
+    
     throw error;
   }
+}
+
+/**
+ * Disconnect user wallet
+ */
+export async function disconnectUserWallet() {
+  userConnected = false;
+  connectedAccount = null;
+  
+  // Clear localStorage
+  localStorage.removeItem(WALLET_CONNECTED_KEY);
+  localStorage.removeItem(WALLET_ADDRESS_KEY);
 }
 
 /**

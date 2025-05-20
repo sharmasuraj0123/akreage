@@ -41,4 +41,8 @@ export interface AuthContextType {
   user: UserProfile | null;
   portfolio: Portfolio | null;
   logout: () => void;
+  walletAddress: string | null;
+  connectWallet: () => Promise<any>;
+  isConnecting: boolean;
+  client: any;
 }

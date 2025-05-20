@@ -1,29 +1,14 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { ConnectButton } from "thirdweb/react";
-import { inAppWallet, createWallet } from "thirdweb/wallets";
-import { client } from '../../lib/client';
-import { Wallet } from '@rainbow-me/rainbowkit';
+import { createWallet } from "thirdweb/wallets";
+import Button from '../ui/Button';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginModalProps {
   onClose: () => void;
 }
 
 const wallets = [
-  inAppWallet({
-    auth: {
-      options: [
-        "google",
-        "discord",
-        "telegram",
-        "farcaster",
-        "email",
-        "x",
-        "passkey",
-        "phone",
-      ],
-    },
-  }),
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),
   createWallet("me.rainbow"),
@@ -32,6 +17,17 @@ const wallets = [
 ];
 
 const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
+  const { connectWallet, isConnecting } = useAuth();
+
+  const handleLogin = async () => {
+    try {
+      await connectWallet();
+      onClose();
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
@@ -45,16 +41,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Welcome Back</h2>
         
         <div className="flex flex-col items-center justify-center space-y-6">
-          <ConnectButton
-            client={client}
-            wallets={wallets}
-            connectButton={{
-              label: "Login"
-            }}
-            connectModal={{ size: "compact" }}
-          />
+          <Button 
+            onClick={handleLogin} 
+            className="w-full justify-center bg-indigo-600 text-white hover:bg-indigo-700"
+            disabled={isConnecting}
+          >
+            {isConnecting ? 'Connecting...' : 'Login with Google'}
+          </Button>
           <div className="text-center text-sm text-gray-600 mt-4">
-            Connect with your favorite authentication method
+            Connect with your Google account to access the platform
           </div>
         </div>
       </div>

@@ -3,13 +3,10 @@ import { User, Mail, Gift, Calendar, Edit, Save, X, Wallet } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
 import PortfolioDashboard from '../portfolio/PortfolioDashboard';
-import { inAppWallet } from 'thirdweb/wallets';
-import { client } from '../../lib/client';
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, walletAddress, connectWallet } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [profileForm, setProfileForm] = useState({
     name: '',
     bio: ''
@@ -23,25 +20,19 @@ const ProfilePage: React.FC = () => {
       });
     }
     
-    // Get wallet address if user is authenticated
-    const getWalletAddress = async () => {
-      if (!isAuthenticated) return;
-      
-      try {
-        const wallet = inAppWallet();
+    // Get wallet address if user is authenticated but wallet not connected
+    const ensureWalletConnection = async () => {
+      if (isAuthenticated && !walletAddress) {
         try {
-          const account = await wallet.connect({ client, strategy: "google" });
-          setWalletAddress(account.address);
+          await connectWallet();
         } catch (error) {
           console.error("Error connecting wallet:", error);
         }
-      } catch (error) {
-        console.error("Error initializing wallet:", error);
       }
     };
     
-    getWalletAddress();
-  }, [user, isAuthenticated]);
+    ensureWalletConnection();
+  }, [user, isAuthenticated, walletAddress, connectWallet]);
   
   const handleEditToggle = () => {
     if (isEditing) {

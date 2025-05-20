@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { createThirdwebClient, getContract, readContract } from 'thirdweb';
 import { sepolia } from 'thirdweb/chains';
-import { inAppWallet } from 'thirdweb/wallets';
 import { Wallet, Clock, DollarSign, PieChart, TrendingUp, Briefcase } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { mockRealEstateAssets } from '../../data/mockData';
@@ -10,40 +9,29 @@ import { mockRealEstateAssets } from '../../data/mockData';
 // Contract address for the NFT (Skyline Tower from mock data)
 const NFT_CONTRACT_ADDRESS = '0x3680FE6cc714d49F8a78e61D901032792b6fa773';
 
-const client = createThirdwebClient({
-  clientId: "a32954d2274ff167331b829df4fd8e25",
-});
-
 const PortfolioDashboard: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, walletAddress, client, connectWallet, isConnecting } = useAuth();
   const [userNFTHoldings, setUserNFTHoldings] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [totalValue, setTotalValue] = useState<number>(0);
   
   useEffect(() => {
-    const getUserWallet = async () => {
-      if (!isAuthenticated) return;
+    const initializeWallet = async () => {
+      if (!isAuthenticated || !walletAddress) {
+        setIsLoading(false);
+        return;
+      }
       
       try {
-        const wallet = inAppWallet();
-        try {
-          // Try to connect silently if already connected
-          const account = await wallet.connect({ client, strategy: "google" });
-          setWalletAddress(account.address);
-          await fetchUserNFTHoldings(account.address);
-        } catch (error) {
-          console.error("Error connecting wallet:", error);
-          setIsLoading(false);
-        }
+        await fetchUserNFTHoldings(walletAddress);
       } catch (error) {
-        console.error("Error initializing wallet:", error);
+        console.error("Error fetching NFT holdings:", error);
         setIsLoading(false);
       }
     };
     
-    getUserWallet();
-  }, [isAuthenticated]);
+    initializeWallet();
+  }, [isAuthenticated, walletAddress]);
   
   const fetchUserNFTHoldings = async (address: string) => {
     setIsLoading(true);
@@ -109,19 +97,18 @@ const PortfolioDashboard: React.FC = () => {
         params: [conditionId, address],
       });
       
-      // Set fixed holdings to 22 for demo
-      const holdings = 22; // Override with fixed value of 22 tokens
-      setUserNFTHoldings(holdings);
+      // Set the actual holdings from blockchain
+      setUserNFTHoldings(Number(userHoldings));
       
       // Calculate total value (1 AUSD per token)
-      setTotalValue(holdings); // 1:1 token to AUSD ratio
+      setTotalValue(Number(userHoldings)); // 1:1 token to AUSD ratio
       
     } catch (error) {
       console.error("Error fetching user NFT holdings:", error);
       
-      // Set default values even if there's an error
-      setUserNFTHoldings(22);
-      setTotalValue(22);
+      // Reset values if there's an error
+      setUserNFTHoldings(0);
+      setTotalValue(0);
     } finally {
       setIsLoading(false);
     }
@@ -215,7 +202,7 @@ const PortfolioDashboard: React.FC = () => {
                       <p className="text-sm text-gray-500">You own</p>
                       <p className="font-bold text-indigo-600">{userNFTHoldings} tokens</p>
                       <p className="text-sm text-gray-500">
-                        22 AUSD
+                        {formatCurrency(userNFTHoldings)} AUSD
                       </p>
                     </div>
                   </div>

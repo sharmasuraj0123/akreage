@@ -4,6 +4,12 @@ export interface UserProfile {
   email: string;
   avatar: string;
   walletBalance: number;
+  bio?: string;
+  followers?: number;
+  following?: number;
+  investments?: number;
+  returns?: number;
+  joinedDate?: string;
 }
 
 export interface Portfolio {

@@ -9,6 +9,8 @@ import DeveloperDetail from './components/developer/DeveloperDetail';
 import LearnPage from './components/learn/LearnPage';
 import LearnResourceDetail from './components/learn/LearnResourceDetail';
 import PortfolioDashboard from './components/portfolio/PortfolioDashboard';
+import ProfilePage from './components/profile/ProfilePage';
+import FundingCard from './components/property/FundingCard';
 import { useAuth } from './context/AuthContext';
 import { mockRealEstateAssets, mockUsers, mockProjects } from './data/mockData';
 import GovernancePage from './components/governance/GovernancePage';
@@ -145,6 +147,7 @@ function App() {
           <>
             {isAuthenticated && <PortfolioDashboard />}
             <Hero onExplore={handleExplore} onCreate={handleCreate} />
+            
             <div className="container mx-auto px-4 py-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Properties</h2>
               <NFTGrid 
@@ -176,7 +179,6 @@ function App() {
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Developers</h1>
             <DevelopersGrid 
               developers={mockUsers}
-              properties={mockRealEstateAssets}
               onDeveloperClick={handleDeveloperClick}
             />
           </div>
@@ -209,6 +211,9 @@ function App() {
       
       case '/governance':
         return <GovernancePage />;
+      
+      case '/profile':
+        return <ProfilePage />;
       
       default:
         return (

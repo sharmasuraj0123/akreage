@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Heart, MapPin, Calendar, TrendingUp, Home, Maximize2, BedDouble, Bath, CheckCircle, Loader, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Heart, MapPin, Calendar, TrendingUp, Home, Maximize2, BedDouble, Bath, CheckCircle, Loader, Clock, X, Info } from 'lucide-react';
 import { RealEstateAsset, Milestone } from '../../types';
 import Button from '../ui/Button';
 import { formatCurrency, formatDate } from '../../utils/formatters';
+import { getClaimConditionData, executeNFTClaim, isUserConnected, connectUserWallet } from '../../utils/blockchain';
 
 interface PropertyDetailProps {
   property: RealEstateAsset;
@@ -10,6 +11,128 @@ interface PropertyDetailProps {
   onLike: (id: string) => void;
   isLiked: boolean;
 }
+
+interface ClaimData {
+  maxClaimableSupply: bigint;
+  supplyClaimed: bigint;
+  pricePerToken: bigint;
+  currency: string;
+  quantityLimitPerWallet?: bigint;
+  conditionId?: bigint;
+}
+
+// Token Purchase Modal Component
+const PurchaseModal: React.FC<{
+  onClose: () => void;
+  onPurchase: (quantity: number) => void;
+  maxAvailable: number;
+  isProcessing: boolean;
+  error?: string;
+}> = ({ onClose, onPurchase, maxAvailable, isProcessing, error }) => {
+  const [quantity, setQuantity] = useState(5);
+  const [inputError, setInputError] = useState<string | null>(null);
+  
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setQuantity(value);
+    
+    // Validate the quantity
+    if (isNaN(value) || value <= 0) {
+      setInputError("Quantity must be a positive number");
+    } else if (value % 5 !== 0) {
+      setInputError("Quantity must be a multiple of 5");
+    } else if (value > maxAvailable) {
+      setInputError(`Only ${maxAvailable} tokens are available`);
+    } else {
+      setInputError(null);
+    }
+  };
+  
+  const handlePurchase = () => {
+    if (!inputError && quantity > 0) {
+      onPurchase(quantity);
+    }
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold">Purchase NFT Tokens</h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+            disabled={isProcessing}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="mb-6">
+          <p className="mb-4">
+            How many tokens would you like to purchase? The quantity must be a multiple of 5.
+          </p>
+          
+          <div className="mb-4">
+            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+              Token Quantity
+            </label>
+            <input
+              type="number"
+              id="quantity"
+              value={quantity}
+              onChange={handleQuantityChange}
+              className={`w-full p-2 border rounded ${inputError ? 'border-red-500' : 'border-gray-300'}`}
+              min="5"
+              step="5"
+              disabled={isProcessing}
+              placeholder="Enter quantity (multiple of 5)"
+            />
+            {inputError && (
+              <p className="mt-1 text-sm text-red-600">{inputError}</p>
+            )}
+          </div>
+          
+          <div className="bg-blue-50 p-3 rounded-md flex items-start mb-4">
+            <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-700">
+              You can purchase up to {maxAvailable} tokens. Each token represents a fractional ownership in this property.
+            </p>
+          </div>
+          
+          {error && (
+            <div className="bg-red-50 p-3 rounded-md mb-4">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+        </div>
+        
+        <div className="flex justify-end space-x-3">
+          <Button 
+            className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+            onClick={onClose}
+            disabled={isProcessing}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handlePurchase}
+            disabled={!!inputError || isProcessing || quantity <= 0}
+          >
+            {isProcessing ? (
+              <span className="flex items-center">
+                <Loader className="animate-spin h-4 w-4 mr-2" />
+                Processing...
+              </span>
+            ) : (
+              'Purchase'
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MilestoneItem: React.FC<{ milestone: Milestone }> = ({ milestone }) => {
   const getStatusIcon = () => {
@@ -69,7 +192,72 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   onLike,
   isLiked
 }) => {
-  const fundingPercentage = (property.fundingRaised / property.fundingGoal) * 100;
+  const [claimData, setClaimData] = useState<ClaimData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [transactionStatus, setTransactionStatus] = useState<{success?: boolean; message: string} | null>(null);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | undefined>(undefined);
+  const [isUserWalletConnected, setIsUserWalletConnected] = useState(false);
+  
+  // Calculate funding percentage based on either blockchain data or mock data
+  const fundingPercentage = claimData 
+    ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
+    : (property.fundingRaised / property.fundingGoal) * 100;
+  
+  // Set actual funding raised and goal based on blockchain data when available
+  const fundingRaised = claimData 
+    ? Number(claimData.supplyClaimed)
+    : property.fundingRaised;
+  
+  const fundingGoal = claimData 
+    ? Number(claimData.maxClaimableSupply)
+    : property.fundingGoal;
+  
+  const tokensAvailable = claimData 
+    ? Number(claimData.maxClaimableSupply - claimData.supplyClaimed)
+    : property.fundingGoal - property.fundingRaised;
+  
+  // Check if user is connected on component mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      const connected = await isUserConnected();
+      setIsUserWalletConnected(connected);
+    };
+    
+    checkConnection();
+  }, []);
+  
+  useEffect(() => {
+    // Only fetch blockchain data if this property has an NFT contract address
+    if (property.nftContractAddress) {
+      fetchClaimData();
+    }
+  }, [property.nftContractAddress]);
+  
+  const fetchClaimData = async () => {
+    if (!property.nftContractAddress) return;
+    
+    setIsLoading(true);
+    try {
+      const result = await getClaimConditionData(property.nftContractAddress);
+      if (result) {
+        setClaimData({
+          maxClaimableSupply: result.maxClaimableSupply,
+          supplyClaimed: result.supplyClaimed,
+          pricePerToken: result.pricePerToken,
+          currency: result.currency,
+          quantityLimitPerWallet: result.quantityLimitPerWallet,
+          conditionId: result.conditionId
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching claim data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const daysLeft = Math.max(0, Math.ceil(
     (new Date(property.fundingDeadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   ));
@@ -79,6 +267,75 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   const [currentImage, setCurrentImage] = useState(0);
   const goPrev = () => setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   const goNext = () => setCurrentImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+
+  const handleInvestClick = async () => {
+    if (!property.nftContractAddress) {
+      setTransactionStatus({
+        success: false,
+        message: "This property does not support blockchain investments."
+      });
+      return;
+    }
+    
+    // Check if the user is connected to wallet
+    const connected = await isUserConnected();
+    if (!connected) {
+      try {
+        // Try to connect the wallet
+        await connectUserWallet();
+        setIsUserWalletConnected(true);
+      } catch (error) {
+        setTransactionStatus({
+          success: false,
+          message: "Please connect your wallet to invest."
+        });
+        return;
+      }
+    }
+    
+    // Show the purchase modal
+    setPurchaseError(undefined);
+    setShowPurchaseModal(true);
+  };
+  
+  const handlePurchaseTokens = async (quantity: number) => {
+    if (!property.nftContractAddress) return;
+    
+    setIsPurchasing(true);
+    setPurchaseError(undefined);
+    
+    try {
+      const result = await executeNFTClaim(property.nftContractAddress, BigInt(quantity));
+      
+      if (result.success) {
+        // Close the modal
+        setShowPurchaseModal(false);
+        
+        // Show success message
+        setTransactionStatus({
+          success: true,
+          message: `Transaction successful! You have purchased ${quantity} tokens.`
+        });
+        
+        // Update the UI with transaction details
+        if (result.transactionHash) {
+          setTransactionStatus({
+            success: true,
+            message: `Transaction successful!\nTransaction ID:\n${result.transactionHash}`
+          });
+        }
+        
+        // Refetch the claim data to update the UI
+        await fetchClaimData();
+      } else {
+        setPurchaseError(result.error);
+      }
+    } catch (error) {
+      setPurchaseError(error instanceof Error ? error.message : "Transaction failed");
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -137,6 +394,12 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
                 }`} 
               />
             </button>
+            
+            {property.nftContractAddress && (
+              <div className="absolute top-4 left-4 bg-indigo-600 text-white text-xs px-2 py-1 rounded-full">
+                NFT Available
+              </div>
+            )}
           </div>
           
           {/* Property Details */}
@@ -250,7 +513,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             <div className="mb-3">
               <div className="flex justify-between text-sm mb-1">
                 <span>Funding Progress</span>
-                <span>{fundingPercentage.toFixed(0)}%</span>
+                <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div 
@@ -261,11 +524,46 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             </div>
             
             <div className="flex justify-between text-sm text-gray-500 mb-4">
-              <span>{formatCurrency(property.fundingRaised)} AUSD raised</span>
-              <span>Goal: {formatCurrency(property.fundingGoal)} AUSD</span>
+              <span>{isLoading ? "Loading..." : `${formatCurrency(fundingRaised)} AUSD raised`}</span>
+              <span>Goal: {isLoading ? "Loading..." : `${formatCurrency(fundingGoal)} AUSD`}</span>
             </div>
             
-            <Button className="w-full">Invest Now</Button>
+            {property.nftContractAddress && !isLoading && (
+              <div className="text-sm text-indigo-600 mb-4">
+                <span>Available: {formatCurrency(tokensAvailable)} AUSD tokens</span>
+              </div>
+            )}
+            
+            <Button 
+              className="w-full" 
+              onClick={handleInvestClick}
+              disabled={isPurchasing || !property.nftContractAddress}
+            >
+              {isPurchasing ? "Processing..." : 
+                !isUserWalletConnected ? "Connect Wallet to Invest" : 
+                property.nftContractAddress ? "Invest Now" : "Investment Unavailable"}
+            </Button>
+            
+            {transactionStatus && (
+              <div className={`mt-3 text-sm p-2 rounded ${
+                transactionStatus.success === false 
+                  ? "bg-red-100 text-red-700" 
+                  : transactionStatus.success === true
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-700"
+              }`}>
+                <p className="break-all text-xs mb-1">{transactionStatus.message}</p>
+              </div>
+            )}
+            
+            {property.nftContractAddress && (
+              <div className="mt-3 text-xs text-gray-500">
+                <p className="mb-1">Contract Address:</p>
+                <p className="font-mono bg-gray-100 p-2 rounded truncate">
+                  {property.nftContractAddress}
+                </p>
+              </div>
+            )}
           </div>
           
           {/* About */}
@@ -298,7 +596,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Project Milestones</h2>
               <ul className="relative">
-                {property.milestones.map((milestone, index) => (
+                {property.milestones.map((milestone) => (
                   <MilestoneItem key={milestone.id} milestone={milestone} />
                 ))}
                 {/* Remove the bottom line from the last item */}
@@ -338,6 +636,17 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Purchase Token Modal */}
+      {showPurchaseModal && (
+        <PurchaseModal
+          onClose={() => setShowPurchaseModal(false)}
+          onPurchase={handlePurchaseTokens}
+          maxAvailable={tokensAvailable}
+          isProcessing={isPurchasing}
+          error={purchaseError}
+        />
+      )}
     </div>
   );
 };

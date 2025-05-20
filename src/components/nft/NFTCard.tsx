@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { RealEstateAsset } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
+import { getClaimConditionData } from '../../utils/blockchain';
 
 interface NFTCardProps {
   property: RealEstateAsset;
@@ -9,8 +10,52 @@ interface NFTCardProps {
   onClick: (id: string) => void;
 }
 
+interface ClaimData {
+  maxClaimableSupply: bigint;
+  supplyClaimed: bigint;
+}
+
 const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
-  const fundingPercentage = (property.fundingRaised / property.fundingGoal) * 100;
+  const [claimData, setClaimData] = useState<ClaimData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Calculate funding percentage based on either blockchain data or mock data
+  const fundingPercentage = claimData 
+    ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
+    : (property.fundingRaised / property.fundingGoal) * 100;
+  
+  // Set actual funding raised and goal based on blockchain data when available
+  const fundingRaised = claimData 
+    ? Number(claimData.supplyClaimed)
+    : property.fundingRaised;
+  
+  const fundingGoal = claimData 
+    ? Number(claimData.maxClaimableSupply)
+    : property.fundingGoal;
+  
+  useEffect(() => {
+    // Only fetch blockchain data if this property has an NFT contract address
+    if (property.nftContractAddress) {
+      const fetchClaimData = async () => {
+        setIsLoading(true);
+        try {
+          const result = await getClaimConditionData(property.nftContractAddress!);
+          if (result) {
+            setClaimData({
+              maxClaimableSupply: result.maxClaimableSupply,
+              supplyClaimed: result.supplyClaimed
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching claim data:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchClaimData();
+    }
+  }, [property.nftContractAddress]);
   
   const handleLikeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -40,6 +85,11 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
             }`} 
           />
         </button>
+        {property.nftContractAddress && (
+          <div className="absolute top-3 left-3 bg-indigo-600 text-white text-xs px-2 py-1 rounded-full">
+            NFT
+          </div>
+        )}
       </div>
       
       <div className="p-4">
@@ -55,7 +105,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
             <span>Funding Progress</span>
-            <span>{fundingPercentage.toFixed(0)}%</span>
+            <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
@@ -67,7 +117,9 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
         
         <div className="text-xs text-gray-500">
           <div>
-            <span className="block text-gray-900 font-medium">{formatCurrency(property.fundingRaised)} AUSD</span>
+            <span className="block text-gray-900 font-medium">
+              {isLoading ? "Loading..." : `${formatCurrency(fundingRaised)} AUSD`}
+            </span>
             <span>Raised</span>
           </div>
         </div>

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import { ConnectButton,  } from "thirdweb/react";
+import { ClaimButton, ConnectButton,  } from "thirdweb/react";
 import { inAppWallet, createWallet, getUserEmail, getWalletBalance } from "thirdweb/wallets";
 import { client } from '../../lib/client';
 import { sepolia } from 'thirdweb/chains';
@@ -119,9 +119,11 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             className="flex items-center space-x-2 cursor-pointer"
             onClick={() => onNavigate('/')}
           >
-            <div className="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center">
-              <span className="text-white font-bold">A</span>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Akreage Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <span className="text-xl font-bold text-gray-900">Akreage</span>
           </div>
 

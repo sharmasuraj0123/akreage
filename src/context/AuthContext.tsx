@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserProfile, Portfolio, AuthContextType } from '../types/auth';
-import { useActiveAccount, useActiveWallet, useActiveWalletConnectionStatus, useDisconnect } from "thirdweb/react";
+import { createThirdwebClient } from "thirdweb";
+import { useActiveAccount, useActiveWallet, useDisconnect } from "thirdweb/react";
+
+const client = createThirdwebClient({
+  clientId: "a32954d2274ff167331b829df4fd8e25", // Replace with your actual client ID
+});
 
 // Mock portfolio data
 const mockPortfolio: Portfolio = {
@@ -43,13 +48,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   
-  // Use hooks from thirdweb
-  const connectionStatus = useActiveWalletConnectionStatus();
+  // Thirdweb authentication
   const wallet = useActiveWallet();
   const account = useActiveAccount();
   const { disconnect } = useDisconnect();
   
-  const isAuthenticated = connectionStatus === 'connected' && !!account;
+  const isAuthenticated = !!wallet && !!account;
   const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -69,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setPortfolio(null);
     }
-  }, [isAuthenticated, account]);
+  }, [isAuthenticated, wallet, account]);
 
   // Logout function using thirdweb
   const logout = () => {

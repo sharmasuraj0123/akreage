@@ -118,7 +118,7 @@ export const mockRealEstateAssets: RealEstateAsset[] = [
       'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
       'https://images.unsplash.com/photo-1464983953574-0892a716854b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
     ],
-    price: 45000, // AUSD
+    price: 1000, // AUSD
     owner: 'user2',
     developer: 'user1',
     project: 'project1',
@@ -128,8 +128,9 @@ export const mockRealEstateAssets: RealEstateAsset[] = [
     expectedReturn: 8.5,
     fundingGoal: 5000000, // AUSD
     fundingRaised: 2750000, // AUSD
-    fundingDeadline: '2023-12-31',
+    fundingDeadline: '2024-12-31',
     tokenSymbol: 'AUSD',
+    nftContractAddress: '0x3680FE6cc714d49F8a78e61D901032792b6fa773',
     milestones: mockMilestones.slice(0, 5), // Assign some milestones
     documents: [
       {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import Button from '../ui/Button';
-
 interface HeroProps {
   onExplore?: () => void;
   onCreate?: () => void;
@@ -17,7 +16,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
               Buidl the Future, One Akre at a Time
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Invest in Global Infrastructure projects; hotels, condos, stadiums and more using AUSD.
+              Invest in Global Infrastructure Projects: Hotels, Condos, Stadiums and more using AUSD.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" onClick={onExplore}>
@@ -29,11 +28,11 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
               </Button>
             </div>
           </div>
-          
+
           <div className="relative">
             <div className="absolute -top-6 -left-6 w-24 h-24 bg-indigo-100 rounded-full z-0"></div>
             <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-indigo-100 rounded-full z-0"></div>
-            
+
             <div className="relative z-10 bg-white p-6 rounded-2xl shadow-xl">
               <div className="grid grid-cols-3 gap-6">
                 <div className="bg-indigo-50 p-4 rounded-xl flex flex-col items-center justify-center text-center">
@@ -52,7 +51,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
                   <div className="text-sm font-medium text-gray-900">&nbsp;</div>
                 </div>
               </div>
-              
+
               <div className="mt-6 p-4 bg-indigo-600 rounded-xl text-white">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-indigo-100">AUSD Price</span>

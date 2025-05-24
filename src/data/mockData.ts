@@ -109,14 +109,14 @@ const mockMilestones: Milestone[] = [
 export const mockRealEstateAssets: RealEstateAsset[] = [
   {
     id: 'asset1',
-    name: 'Skyline Tower #42',
-    description: 'Luxury apartment complex in downtown with panoramic city views and premium amenities.',
-    image: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
+    name: 'Aurelia Bay Resort',
+    description: 'Luxury resort development with beachfront access and world-class amenities.',
+    image: '/images/resort-project-1.png',
     images: [
-      'https://images.unsplash.com/photo-1460317442991-0ec209397118?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1464983953574-0892a716854b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      '/images/resort-project-1.png',
+      '/images/resort-project-2.png',
+      '/images/resort-project-3.png',
+      '/images/resort-project-4.png'
     ],
     price: 1000, // AUSD
     owner: 'user2',
@@ -155,13 +155,14 @@ export const mockRealEstateAssets: RealEstateAsset[] = [
   },
   {
     id: 'asset2',
-    name: 'Green Valley Residences #08',
-    description: 'Eco-friendly residential development with sustainable features and community gardens.',
-    image: 'https://images.unsplash.com/photo-1448630360428-65456885c650?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
+    name: 'Momentum Arena',
+    description: 'State-of-the-art sports and entertainment complex with multi-purpose facilities.',
+    image: '/images/stadium-project-1.png',
     images: [
-      'https://images.unsplash.com/photo-1448630360428-65456885c650?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1465101178521-c1a9136a3fdc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      '/images/stadium-project-1.png',
+      '/images/stadium-project-2.png',
+      '/images/stadium-project-3.png',
+      '/images/stadium-project-4.png'
     ],
     price: 75000, // AUSD
     owner: 'user1',
@@ -193,13 +194,14 @@ export const mockRealEstateAssets: RealEstateAsset[] = [
   },
   {
     id: 'asset3',
-    name: 'Urban Hub Commercial #15',
-    description: 'Mixed-use development with retail spaces, offices, and co-working areas in a prime location.',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
+    name: 'Skyline Residences',
+    description: 'Premium high-rise residential towers with panoramic city views and luxury amenities.',
+    image: '/images/condo-project-1.png',
     images: [
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
+      '/images/condo-project-1.png',
+      '/images/condo-project-2.png',
+      '/images/condo-project-3.png',
+      '/images/condo-project-4.png'
     ],
     price: 120000, // AUSD
     owner: 'user3',

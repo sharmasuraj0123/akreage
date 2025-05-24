@@ -118,7 +118,7 @@ export const mockRealEstateAssets: RealEstateAsset[] = [
       '/images/resort-project-3.png',
       '/images/resort-project-4.png'
     ],
-    price: 1000, // AUSD
+    price: 1000000, // AUSD
     owner: 'user2',
     developer: 'user1',
     project: 'project1',
@@ -164,7 +164,7 @@ export const mockRealEstateAssets: RealEstateAsset[] = [
       '/images/stadium-project-3.png',
       '/images/stadium-project-4.png'
     ],
-    price: 75000, // AUSD
+    price: 5000000, // AUSD
     owner: 'user1',
     developer: 'user1',
     project: 'project1',
@@ -203,7 +203,7 @@ export const mockRealEstateAssets: RealEstateAsset[] = [
       '/images/condo-project-3.png',
       '/images/condo-project-4.png'
     ],
-    price: 120000, // AUSD
+    price: 10000000, // AUSD
     owner: 'user3',
     developer: 'user3',
     project: 'project2',

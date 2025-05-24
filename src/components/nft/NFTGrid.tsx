@@ -19,7 +19,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 15000000]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [returnRange, setReturnRange] = useState<[number, number]>([0, 15]);
   
@@ -61,7 +61,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
   };
   
   const clearFilters = () => {
-    setPriceRange([0, 200000]);
+    setPriceRange([0, 15000000]);
     setSelectedLocations([]);
     setReturnRange([0, 15]);
   };
@@ -106,7 +106,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
               {/* Price Range Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price Range (AUSD)
+                  Total Raise Range (AUSD)
                 </label>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-500">{formatCurrency(priceRange[0])}</span>
@@ -115,8 +115,8 @@ const NFTGrid: React.FC<NFTGridProps> = ({
                 <input 
                   type="range" 
                   min="0" 
-                  max="200000" 
-                  step="5000"
+                  max="15000000" 
+                  step="100000"
                   value={priceRange[1]}
                   onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"

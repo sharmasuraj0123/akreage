@@ -15,11 +15,10 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Invest in Real Estate with <span className="text-indigo-600">AUSD</span>
+              Buidl the Future, One Akre at a Time
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Fractional ownership of premium properties using {ausdToken.name} ({ausdToken.symbol}). 
-              Invest in real estate assets from around the world with as little as 100 AUSD.
+              Invest in Global Infrastructure projects; hotels, condos, stadiums and more using {ausdToken.name} ({ausdToken.symbol}).
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" onClick={onExplore}>

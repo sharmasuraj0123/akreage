@@ -1,19 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { Menu, X, Search, User, Settings, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import { ClaimButton, ConnectButton } from "thirdweb/react";
-import { createWallet } from "thirdweb/wallets";
-import { sepolia } from 'thirdweb/chains';
-import { getOwnedTokenIds } from 'thirdweb/extensions/erc721';
-
-const wallets = [
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  createWallet("me.rainbow"),
-  createWallet("io.rabby"),
-  createWallet("io.zerion.wallet"),
-];
 
 interface HeaderProps {
   onNavigate: (path: string) => void;
@@ -23,7 +11,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { isAuthenticated, user, logout, client, connectWallet } = useAuth();
+  const { isAuthenticated, user, logout, connectWallet } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => currentPath === path;
@@ -113,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             onClick={() => onNavigate('/')}
           >
             <img 
-              src="/logo.png" 
+              src="/logo.jpg" 
               alt="Akreage Logo" 
               className="w-8 h-8 object-contain"
             />

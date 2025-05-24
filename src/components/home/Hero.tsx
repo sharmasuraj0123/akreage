@@ -54,7 +54,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
 
               <div className="mt-6 p-4 bg-indigo-600 rounded-xl text-white">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-indigo-100">AUSD Price</span>
+                  <span className="text-indigo-100">AUSD Total Raise</span>
                   <span className="font-medium">$1.00 USD</span>
                 </div>
                 <div className="flex items-center justify-between">

@@ -487,7 +487,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
           <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
             <div className="flex justify-between mb-2">
               <div>
-                <span className="block text-sm text-gray-500">Price</span>
+                <span className="block text-sm text-gray-500">Total Raise</span>
                 <span className="text-xl font-bold text-gray-900">{formatCurrency(property.price)} AUSD</span>
               </div>
               <div className="text-right">

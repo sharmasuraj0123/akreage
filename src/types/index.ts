@@ -28,7 +28,7 @@ export interface RealEstateAsset {
   description: string;
   image: string;
   images?: string[]; // Add images array for multiple photos
-  price: number; // Price in AUSD
+  price: number; // Total Raise in AUSD
   owner: string;
   developer: string;
   project: string;

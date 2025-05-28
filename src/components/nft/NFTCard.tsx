@@ -33,6 +33,10 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
     ? Number(claimData.maxClaimableSupply)
     : property.fundingGoal;
   
+  const tokensAvailable = claimData 
+    ? Number(claimData.maxClaimableSupply - claimData.supplyClaimed)
+    : property.fundingGoal - property.fundingRaised;
+  
   useEffect(() => {
     // Only fetch blockchain data if this property has an NFT contract address
     if (property.nftContractAddress) {
@@ -104,7 +108,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
         
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
-            <span>Funding Progress</span>
+            <span>{tokensAvailable}/{fundingGoal} Investor spots left</span>
             <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">

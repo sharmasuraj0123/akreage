@@ -194,7 +194,7 @@ const PortfolioDashboard: React.FC = () => {
                       <div className="mt-1 flex items-center">
                         <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                         <span className="text-sm font-medium text-green-600">
-                          {mockRealEstateAssets[0].expectedReturn}% Expected Return
+                          Premium Investment Property
                         </span>
                       </div>
                     </div>

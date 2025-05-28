@@ -491,17 +491,13 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
                 <span className="text-xl font-bold text-gray-900">{formatCurrency(property.price)} AUSD</span>
               </div>
               <div className="text-right">
-                <span className="block text-sm text-gray-500">Expected Return</span>
-                <span className="text-xl font-bold text-indigo-600">{property.expectedReturn}%</span>
+                <span className="block text-sm text-gray-500">Token Symbol</span>
+                <span className="text-xl font-bold text-indigo-600">{property.tokenSymbol}</span>
               </div>
             </div>
             
             <div className="flex justify-between mb-4">
               <div>
-                <span className="block text-sm text-gray-500">Token Symbol</span>
-                <span className="font-medium">{property.tokenSymbol}</span>
-              </div>
-              <div className="text-right">
                 <span className="block text-sm text-gray-500">Funding Deadline</span>
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-1 text-gray-400" />
@@ -512,7 +508,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             
             <div className="mb-3">
               <div className="flex justify-between text-sm mb-1">
-                <span>Funding Progress</span>
+                <span>{tokensAvailable}/{fundingGoal} Investor spots left</span>
                 <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
@@ -578,15 +574,15 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             <ul className="space-y-2">
               <li className="flex items-start">
                 <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">Projected annual return of {property.expectedReturn}% based on rental income and property appreciation.</span>
-              </li>
-              <li className="flex items-start">
-                <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-600">Prime location with strong rental demand and growth potential.</span>
               </li>
               <li className="flex items-start">
                 <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-600">Professionally managed with quarterly distributions to token holders.</span>
+              </li>
+              <li className="flex items-start">
+                <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-600">Transparent blockchain-based ownership and transaction history.</span>
               </li>
             </ul>
           </div>

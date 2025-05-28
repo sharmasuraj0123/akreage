@@ -121,7 +121,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
       
       <div className="mb-3">
         <div className="flex justify-between text-sm mb-1">
-          <span>Funding Progress</span>
+          <span>{tokensAvailable}/{fundingGoal} Investor spots left</span>
           <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">

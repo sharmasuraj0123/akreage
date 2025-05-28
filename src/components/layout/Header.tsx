@@ -124,6 +124,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
           <nav className="hidden md:flex items-center space-x-1">
             <NavButton to="/">Home</NavButton>
             <NavButton to="/properties">Properties</NavButton>
+            <NavButton to="/how-it-works">How It Works</NavButton>
             <NavButton to="/governance">Governance</NavButton>
           </nav>
 
@@ -207,6 +208,12 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
               className={`block w-full text-left px-3 py-2 text-sm rounded-md ${isActive('/properties') ? 'text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}`}
             >
               Properties
+            </button>
+            <button
+              onClick={() => { onNavigate('/how-it-works'); setIsMenuOpen(false); }}
+              className={`block w-full text-left px-3 py-2 text-sm rounded-md ${isActive('/how-it-works') ? 'text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}`}
+            >
+              How It Works
             </button>
             <button
               onClick={() => { onNavigate('/developers'); setIsMenuOpen(false); }}

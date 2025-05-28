@@ -11,6 +11,7 @@ import LearnResourceDetail from './components/learn/LearnResourceDetail';
 import PortfolioDashboard from './components/portfolio/PortfolioDashboard';
 import ProfilePage from './components/profile/ProfilePage';
 import FundingCard from './components/property/FundingCard';
+import HowItWorksPage from './components/how-it-works/HowItWorksPage';
 import { useAuth } from './context/AuthContext';
 import { mockRealEstateAssets, mockUsers, mockProjects } from './data/mockData';
 import GovernancePage from './components/governance/GovernancePage';
@@ -214,6 +215,9 @@ function App() {
       
       case '/profile':
         return <ProfilePage />;
+      
+      case '/how-it-works':
+        return <HowItWorksPage />;
       
       default:
         return (

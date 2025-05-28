@@ -9,6 +9,7 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
   const fundingPercentage = (project.totalFundingRaised / project.totalFundingGoal) * 100;
+  const spotsLeft = project.totalFundingGoal - project.totalFundingRaised;
   
   return (
     <div 
@@ -35,7 +36,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
         
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
-            <span>Funding Progress</span>
+            <span>{spotsLeft}/{project.totalFundingGoal} Investor spots left</span>
             <span>{fundingPercentage.toFixed(0)}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">

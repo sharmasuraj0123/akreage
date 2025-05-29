@@ -129,17 +129,14 @@ export async function getUserById(id: string) {
   return data
 }
 
-// Find user by wallet address (we'll store it in the bio field temporarily)
-// In production, you'd want to add a proper wallet_address column
+// Find user by wallet address using the dedicated wallet_address column
 export async function getUserByWalletAddress(walletAddress: string) {
   const supabase = createClient()
   
-  // For now, we'll store the wallet address in the bio field and search by it
-  // This is a temporary solution - in production you'd add a wallet_address column
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .eq('bio', `wallet:${walletAddress}`)
+    .eq('wallet_address', walletAddress)
     .maybeSingle() // Use maybeSingle to avoid error if no user found
 
   if (error) throw error
@@ -161,7 +158,8 @@ export async function findOrCreateUserByWallet(walletAddress: string, userData?:
     const newUserData = {
       name: userData?.name || 'Connected User',
       avatar: userData?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
-      bio: `wallet:${walletAddress}`, // Store wallet address in bio field temporarily
+      wallet_address: walletAddress, // Store wallet address in dedicated column
+      bio: null, // Keep bio separate for actual user bio content
       followers: 0,
       following: 0
     }
@@ -170,6 +168,41 @@ export async function findOrCreateUserByWallet(walletAddress: string, userData?:
   }
   
   return user
+}
+
+// Link wallet address to existing user or create new user
+// This function is specifically for the login flow
+export async function linkWalletToUser(walletAddress: string, userData?: {
+  name?: string
+  avatar?: string
+  email?: string
+}) {
+  const supabase = createClient()
+  
+  // Check if a user already exists with this wallet address
+  let user = await getUserByWalletAddress(walletAddress)
+  
+  if (user) {
+    // User already exists, return their ID and profile
+    console.log(`User found for wallet ${walletAddress}:`, user.id)
+    return user
+  } else {
+    // No user exists for this wallet, create a new one
+    console.log(`Creating new user for wallet ${walletAddress}`)
+    
+    const newUserData = {
+      name: userData?.name || 'Connected User',
+      avatar: userData?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
+      wallet_address: walletAddress,
+      bio: null,
+      followers: 0,
+      following: 0
+    }
+    
+    user = await createUser(newUserData)
+    console.log(`Created new user for wallet ${walletAddress}:`, user.id)
+    return user
+  }
 }
 
 export async function createUser(user: Tables['users']['Insert']) {

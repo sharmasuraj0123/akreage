@@ -7,6 +7,7 @@ export interface Database {
           name: string
           avatar: string | null
           bio: string | null
+          wallet_address: string | null
           followers: number
           following: number
           created_at: string
@@ -17,6 +18,7 @@ export interface Database {
           name: string
           avatar?: string | null
           bio?: string | null
+          wallet_address?: string | null
           followers?: number
           following?: number
           created_at?: string
@@ -27,6 +29,7 @@ export interface Database {
           name?: string
           avatar?: string | null
           bio?: string | null
+          wallet_address?: string | null
           followers?: number
           following?: number
           created_at?: string

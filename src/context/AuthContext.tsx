@@ -3,7 +3,7 @@ import { UserProfile, Portfolio, AuthContextType } from '../types/auth';
 import { createThirdwebClient } from "thirdweb";
 import { useActiveAccount, useActiveWallet, useDisconnect } from "thirdweb/react";
 import { isUserConnected, connectUserWallet, disconnectUserWallet } from '../utils/blockchain';
-import { findOrCreateUserByWallet } from '../lib/supabase/database';
+import { findOrCreateUserByWallet, linkWalletToUser } from '../lib/supabase/database';
 import { inAppWallet } from 'thirdweb/wallets';
 import { sepolia } from 'thirdweb/chains';
 
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (account) {
             console.log('AuthContext: Creating user from account', account);
             try {
-              const dbUser = await findOrCreateUserByWallet(account.address, {
+              const dbUser = await linkWalletToUser(account.address, {
                 name: 'Connected User',
                 avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
               });
@@ -154,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 console.log('AuthContext: Got account from blockchain', obtainedAccount);
                 
                 try {
-                  const dbUser = await findOrCreateUserByWallet(obtainedAccount.address, {
+                  const dbUser = await linkWalletToUser(obtainedAccount.address, {
                     name: 'Connected User',
                     avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
                   });
@@ -218,7 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Create user profile from ThirdWeb account using database
             console.log('AuthContext: Creating user from ThirdWeb account');
             try {
-              const dbUser = await findOrCreateUserByWallet(account.address, {
+              const dbUser = await linkWalletToUser(account.address, {
                 name: 'Connected User',
                 avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
               });
@@ -297,7 +297,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Create or find user in database using wallet address
       const createUserProfile = async () => {
         try {
-          const dbUser = await findOrCreateUserByWallet(account.address, {
+          const dbUser = await linkWalletToUser(account.address, {
             name: 'Connected User',
             avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
           });
@@ -375,7 +375,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('AuthContext: No user exists, creating from connected wallet');
         
         try {
-          const dbUser = await findOrCreateUserByWallet(account.address, {
+          const dbUser = await linkWalletToUser(account.address, {
             name: 'Connected User',
             avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
           });

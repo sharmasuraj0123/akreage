@@ -3,6 +3,7 @@ import { UserProfile, Portfolio, AuthContextType } from '../types/auth';
 import { createThirdwebClient } from "thirdweb";
 import { useActiveAccount, useActiveWallet, useDisconnect } from "thirdweb/react";
 import { isUserConnected, connectUserWallet, disconnectUserWallet } from '../utils/blockchain';
+import { findOrCreateUserByWallet } from '../lib/supabase/database';
 import { inAppWallet } from 'thirdweb/wallets';
 import { sepolia } from 'thirdweb/chains';
 
@@ -85,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (parsed.user) {
               setUser(parsed.user);
               setPortfolio(parsed.portfolio || mockPortfolio);
-              setWalletAddress(parsed.user.id);
+              setWalletAddress(parsed.user.walletAddress || account?.address);
               console.log('AuthContext: Restored user from session:', parsed.user);
             }
           } catch (error) {
@@ -94,27 +95,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else {
           // We're connected but have no session data
-          // Let's create a fallback user if the account is available
-          console.log('AuthContext: Connected but no session data. Checking account...');
+          // Let's create a user from the database
+          console.log('AuthContext: Connected but no session data. Creating user from database...');
           if (account) {
-            console.log('AuthContext: Creating fallback user from account', account);
-            const userProfile: UserProfile = {
-              id: account.address,
-              name: 'Connected User',
-              email: '',
-              avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-              walletBalance: 25000,
-            };
-            
-            setUser(userProfile);
-            setPortfolio(mockPortfolio);
-            setWalletAddress(account.address);
-            
-            // Save to session
-            sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-              user: userProfile,
-              portfolio: mockPortfolio
-            }));
+            console.log('AuthContext: Creating user from account', account);
+            try {
+              const dbUser = await findOrCreateUserByWallet(account.address, {
+                name: 'Connected User',
+                avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+              });
+              
+              const userProfile: UserProfile = {
+                id: dbUser.id,
+                name: dbUser.name,
+                email: '',
+                avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
+                walletBalance: 25000,
+                bio: dbUser.bio,
+                followers: dbUser.followers,
+                following: dbUser.following
+              };
+              
+              setUser(userProfile);
+              setPortfolio(mockPortfolio);
+              setWalletAddress(account.address);
+              
+              // Save to session
+              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                user: userProfile,
+                portfolio: mockPortfolio
+              }));
+            } catch (error) {
+              console.error('Error creating user from database:', error);
+              // Fallback to local user creation
+              const userProfile: UserProfile = {
+                id: account.address,
+                name: 'Connected User',
+                email: '',
+                avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+                walletBalance: 25000,
+              };
+              
+              setUser(userProfile);
+              setPortfolio(mockPortfolio);
+              setWalletAddress(account.address);
+              
+              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                user: userProfile,
+                portfolio: mockPortfolio
+              }));
+            }
           } else {
             // We need to get the account from blockchain utils since we're connected
             console.log('AuthContext: No account yet. Fetching account from blockchain...');
@@ -122,24 +152,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const obtainedAccount = await connectUserWallet();
               if (obtainedAccount) {
                 console.log('AuthContext: Got account from blockchain', obtainedAccount);
-                // Create user profile 
-                const userProfile: UserProfile = {
-                  id: obtainedAccount.address,
-                  name: 'Connected User',
-                  email: '',
-                  avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-                  walletBalance: 25000,
-                };
                 
-                setUser(userProfile);
-                setPortfolio(mockPortfolio);
-                setWalletAddress(obtainedAccount.address);
-                
-                // Save to session
-                sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-                  user: userProfile,
-                  portfolio: mockPortfolio
-                }));
+                try {
+                  const dbUser = await findOrCreateUserByWallet(obtainedAccount.address, {
+                    name: 'Connected User',
+                    avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+                  });
+                  
+                  const userProfile: UserProfile = {
+                    id: dbUser.id,
+                    name: dbUser.name,
+                    email: '',
+                    avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
+                    walletBalance: 25000,
+                    bio: dbUser.bio,
+                    followers: dbUser.followers,
+                    following: dbUser.following
+                  };
+                  
+                  setUser(userProfile);
+                  setPortfolio(mockPortfolio);
+                  setWalletAddress(obtainedAccount.address);
+                  
+                  sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                    user: userProfile,
+                    portfolio: mockPortfolio
+                  }));
+                } catch (error) {
+                  console.error('Error creating user from database:', error);
+                  // Fallback
+                  const userProfile: UserProfile = {
+                    id: obtainedAccount.address,
+                    name: 'Connected User',
+                    email: '',
+                    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+                    walletBalance: 25000,
+                  };
+                  
+                  setUser(userProfile);
+                  setPortfolio(mockPortfolio);
+                  setWalletAddress(obtainedAccount.address);
+                  
+                  sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                    user: userProfile,
+                    portfolio: mockPortfolio
+                  }));
+                }
               }
             } catch (error) {
               console.error("Error getting account from blockchain:", error);
@@ -157,24 +215,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsAuthenticated(true);
             setWalletAddress(account.address);
             
-            // Create user profile from ThirdWeb account
+            // Create user profile from ThirdWeb account using database
             console.log('AuthContext: Creating user from ThirdWeb account');
-            const userProfile: UserProfile = {
-              id: account.address,
-              name: 'Connected User',
-              email: '',
-              avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-              walletBalance: 25000,
-            };
-            
-            setUser(userProfile);
-            setPortfolio(mockPortfolio);
-            
-            // Save to session
-            sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-              user: userProfile,
-              portfolio: mockPortfolio
-            }));
+            try {
+              const dbUser = await findOrCreateUserByWallet(account.address, {
+                name: 'Connected User',
+                avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+              });
+              
+              const userProfile: UserProfile = {
+                id: dbUser.id,
+                name: dbUser.name,
+                email: '',
+                avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
+                walletBalance: 25000,
+                bio: dbUser.bio,
+                followers: dbUser.followers,
+                following: dbUser.following
+              };
+              
+              setUser(userProfile);
+              setPortfolio(mockPortfolio);
+              
+              // Save to session
+              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                user: userProfile,
+                portfolio: mockPortfolio
+              }));
+            } catch (error) {
+              console.error('Error creating user from database:', error);
+              // Fallback
+              const userProfile: UserProfile = {
+                id: account.address,
+                name: 'Connected User',
+                email: '',
+                avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+                walletBalance: 25000,
+              };
+              
+              setUser(userProfile);
+              setPortfolio(mockPortfolio);
+              
+              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                user: userProfile,
+                portfolio: mockPortfolio
+              }));
+            }
           } catch (error) {
             console.error("Error syncing wallet state:", error);
           }
@@ -207,26 +293,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (isAuthenticated && account) {
       console.log('AuthContext: Creating user profile from account', account);
-      // Create user profile from account data
-      const userProfile: UserProfile = {
-        id: account.address,
-        name: 'Connected User',
-        email: '',  // We may not have access to email directly
-        avatar: 'https://randomuser.me/api/portraits/men/1.jpg', // Default avatar 
-        walletBalance: 25000, // Mock wallet balance
+      
+      // Create or find user in database using wallet address
+      const createUserProfile = async () => {
+        try {
+          const dbUser = await findOrCreateUserByWallet(account.address, {
+            name: 'Connected User',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+          });
+          
+          // Create user profile from database user
+          const userProfile: UserProfile = {
+            id: dbUser.id, // Use the UUID from database
+            name: dbUser.name,
+            email: '',  // We may not have access to email directly
+            avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
+            walletBalance: 25000, // Mock wallet balance
+            bio: dbUser.bio,
+            followers: dbUser.followers,
+            following: dbUser.following
+          };
+          
+          console.log('AuthContext: Setting user profile from database', userProfile);
+          setUser(userProfile);
+          setPortfolio(mockPortfolio);
+          setWalletAddress(account.address);
+          
+          // Save to session storage
+          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+            user: userProfile,
+            portfolio: mockPortfolio
+          }));
+          console.log('AuthContext: Saved user session to storage');
+        } catch (error) {
+          console.error('Error creating/finding user in database:', error);
+          // Fallback to local user creation if database fails
+          const userProfile: UserProfile = {
+            id: account.address, // Fallback to wallet address
+            name: 'Connected User',
+            email: '',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+            walletBalance: 25000,
+          };
+          
+          setUser(userProfile);
+          setPortfolio(mockPortfolio);
+          setWalletAddress(account.address);
+          
+          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+            user: userProfile,
+            portfolio: mockPortfolio
+          }));
+        }
       };
       
-      console.log('AuthContext: Setting user profile', userProfile);
-      setUser(userProfile);
-      setPortfolio(mockPortfolio);
-      setWalletAddress(account.address);
-      
-      // Save to session storage
-      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-        user: userProfile,
-        portfolio: mockPortfolio
-      }));
-      console.log('AuthContext: Saved user session to storage');
+      createUserProfile();
     } else if (!isAuthenticated) {
       // Clear user data if not authenticated
       console.log('AuthContext: Not authenticated, clearing user data');
@@ -252,23 +373,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Make sure we also create the user profile if it doesn't exist
       if (!user) {
         console.log('AuthContext: No user exists, creating from connected wallet');
-        const userProfile: UserProfile = {
-          id: account.address,
-          name: 'Connected User',
-          email: '',
-          avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-          walletBalance: 25000,
-        };
         
-        setUser(userProfile);
-        setPortfolio(mockPortfolio);
-        
-        // Save to session
-        sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-          user: userProfile,
-          portfolio: mockPortfolio
-        }));
-        console.log('AuthContext: Created and saved new user profile');
+        try {
+          const dbUser = await findOrCreateUserByWallet(account.address, {
+            name: 'Connected User',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+          });
+          
+          const userProfile: UserProfile = {
+            id: dbUser.id, // Use the UUID from database
+            name: dbUser.name,
+            email: '',
+            avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
+            walletBalance: 25000,
+            bio: dbUser.bio,
+            followers: dbUser.followers,
+            following: dbUser.following
+          };
+          
+          setUser(userProfile);
+          setPortfolio(mockPortfolio);
+          
+          // Save to session
+          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+            user: userProfile,
+            portfolio: mockPortfolio
+          }));
+          console.log('AuthContext: Created and saved new user profile from database');
+        } catch (error) {
+          console.error('Error creating user in database:', error);
+          // Fallback to local user creation
+          const userProfile: UserProfile = {
+            id: account.address,
+            name: 'Connected User',
+            email: '',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+            walletBalance: 25000,
+          };
+          
+          setUser(userProfile);
+          setPortfolio(mockPortfolio);
+          
+          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+            user: userProfile,
+            portfolio: mockPortfolio
+          }));
+          console.log('AuthContext: Created fallback user profile');
+        }
       }
       
       return account;

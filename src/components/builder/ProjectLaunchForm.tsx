@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, CheckCircle, AlertCircle, Loader } from 'lucide-react'
+import { useCreateProject } from '../../hooks/useCreateProject'
 
 interface Milestone {
   title: string
@@ -8,7 +9,11 @@ interface Milestone {
   fundingNeeded: number
 }
 
-export const ProjectLaunchForm = () => {
+interface ProjectLaunchFormProps {
+  onSuccess?: () => void
+}
+
+export const ProjectLaunchForm = ({ onSuccess }: ProjectLaunchFormProps) => {
   const [projectName, setProjectName] = useState('')
   const [projectLocation, setProjectLocation] = useState('')
   const [propertyType, setPropertyType] = useState('residential')
@@ -24,6 +29,9 @@ export const ProjectLaunchForm = () => {
       fundingNeeded: 25000
     }))
   )
+  const [showSuccess, setShowSuccess] = useState(false)
+  
+  const { createProject, loading, error } = useCreateProject()
   
   const handleMilestoneToggle = (index: number) => {
     setExpandedMilestone(expandedMilestone === index ? null : index)
@@ -35,24 +43,77 @@ export const ProjectLaunchForm = () => {
     ))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const projectData = {
-      projectName,
-      projectLocation,
-      propertyType,
-      fundingDeadline,
-      totalFunding,
-      projectDuration,
-      milestones,
+    
+    try {
+      const projectData = {
+        projectName,
+        projectLocation,
+        propertyType,
+        fundingDeadline,
+        totalFunding,
+        projectDuration,
+        milestones,
+      }
+      
+      await createProject(projectData)
+      
+      // Show success message
+      setShowSuccess(true)
+      
+      // Call onSuccess callback after a short delay to show the success message
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess()
+        }
+      }, 2000)
+      
+    } catch (err) {
+      console.error('Error creating project:', err)
+      // Error is handled by the hook and displayed in the UI
     }
-    console.log('Project Data:', projectData)
-    alert('Project Submitted Successfully! (Check console for details)')
+  }
+
+  // Success state
+  if (showSuccess) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="text-center">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+            <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Project Created Successfully!</h1>
+          <p className="text-gray-600 mb-6">
+            Your project "{projectName}" has been submitted for review. It will be visible to investors once approved.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-blue-900 mb-2">What happens next?</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Your project will be reviewed by our team</li>
+              <li>• You can view and manage it in your builder dashboard</li>
+              <li>• Once approved, it will be visible to investors</li>
+              <li>• You'll receive notifications about the approval status</li>
+            </ul>
+          </div>
+          <p className="text-sm text-gray-500">Redirecting to your dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-8">Launch a New Project</h1>
+      
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+            <span className="text-red-800">{error}</span>
+          </div>
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -67,6 +128,7 @@ export const ProjectLaunchForm = () => {
             onChange={(e) => setProjectName(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
+            disabled={loading}
           />
         </div>
 
@@ -82,6 +144,7 @@ export const ProjectLaunchForm = () => {
             onChange={(e) => setProjectLocation(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
+            disabled={loading}
           />
         </div>
 
@@ -99,6 +162,7 @@ export const ProjectLaunchForm = () => {
                   checked={propertyType === type}
                   onChange={(e) => setPropertyType(e.target.value)}
                   className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                  disabled={loading}
                 />
                 <span className="capitalize">{type}</span>
               </label>
@@ -117,6 +181,7 @@ export const ProjectLaunchForm = () => {
             onChange={(e) => setFundingDeadline(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
+            disabled={loading}
           />
         </div>
 
@@ -132,6 +197,7 @@ export const ProjectLaunchForm = () => {
             value={totalFunding}
             onChange={(e) => setTotalFunding(Number(e.target.value))}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            disabled={loading}
           />
           <div className="flex justify-between text-sm text-gray-500 mt-1">
             <span>$50K</span>
@@ -151,6 +217,7 @@ export const ProjectLaunchForm = () => {
             value={projectDuration}
             onChange={(e) => setProjectDuration(Number(e.target.value))}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            disabled={loading}
           />
           <div className="flex justify-between text-sm text-gray-500 mt-1">
             <span>6 months</span>
@@ -171,6 +238,7 @@ export const ProjectLaunchForm = () => {
                   type="button"
                   className="w-full px-4 py-3 flex justify-between items-center"
                   onClick={() => handleMilestoneToggle(index)}
+                  disabled={loading}
                 >
                   <span className="font-medium">
                     Milestone {index + 1}
@@ -191,6 +259,7 @@ export const ProjectLaunchForm = () => {
                       value={milestone.title}
                       onChange={(e) => updateMilestone(index, 'title', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      disabled={loading}
                     />
                     <textarea
                       placeholder="Milestone Description"
@@ -198,6 +267,7 @@ export const ProjectLaunchForm = () => {
                       onChange={(e) => updateMilestone(index, 'description', e.target.value)}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      disabled={loading}
                     />
                     <div>
                       <label className="block text-sm text-gray-700 mb-1">
@@ -210,6 +280,7 @@ export const ProjectLaunchForm = () => {
                         max={12}
                         onChange={(e) => updateMilestone(index, 'duration', Number(e.target.value))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        disabled={loading}
                       />
                     </div>
                     <div>
@@ -224,6 +295,7 @@ export const ProjectLaunchForm = () => {
                         step={10000}
                         onChange={(e) => updateMilestone(index, 'fundingNeeded', Number(e.target.value))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        disabled={loading}
                       />
                     </div>
                   </div>
@@ -236,9 +308,11 @@ export const ProjectLaunchForm = () => {
         <div className="flex justify-end pt-6">
           <button 
             type="submit"
-            className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            disabled={loading}
           >
-            Submit Project
+            {loading && <Loader className="animate-spin h-4 w-4 mr-2" />}
+            {loading ? 'Creating Project...' : 'Submit Project'}
           </button>
         </div>
       </form>

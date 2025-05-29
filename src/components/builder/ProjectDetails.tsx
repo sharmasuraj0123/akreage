@@ -40,8 +40,8 @@ export const ProjectDetails = ({ project, onBack }: ProjectDetailsProps) => {
                   <Calendar className="h-4 w-4 mr-2" />
                   Project Timeline
                 </div>
-                <div className="text-lg font-semibold">{project.duration} months</div>
-                <div className="text-sm text-gray-500">Started: {project.startDate}</div>
+                <div className="text-lg font-semibold">{project.duration || 'TBD'} months</div>
+                <div className="text-sm text-gray-500">Started: {project.startDate || 'TBD'}</div>
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -49,8 +49,8 @@ export const ProjectDetails = ({ project, onBack }: ProjectDetailsProps) => {
                   <DollarSign className="h-4 w-4 mr-2" />
                   Total Investment
                 </div>
-                <div className="text-lg font-semibold">${project.totalInvestment.toLocaleString()}</div>
-                <div className="text-sm text-gray-500">Funded: {Math.round((project.fundingRaised / project.totalInvestment) * 100)}%</div>
+                <div className="text-lg font-semibold">${(project.totalInvestment || 0).toLocaleString()}</div>
+                <div className="text-sm text-gray-500">Funded: {project.totalInvestment && project.fundingRaised ? Math.round((project.fundingRaised / project.totalInvestment) * 100) : 0}%</div>
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -58,7 +58,7 @@ export const ProjectDetails = ({ project, onBack }: ProjectDetailsProps) => {
                   <Users className="h-4 w-4 mr-2" />
                   Total Investors
                 </div>
-                <div className="text-lg font-semibold">{project.investorCount}</div>
+                <div className="text-lg font-semibold">{project.investorCount || 0}</div>
                 <div className="text-sm text-gray-500">Active investors</div>
               </div>
             </div>
@@ -68,11 +68,11 @@ export const ProjectDetails = ({ project, onBack }: ProjectDetailsProps) => {
               <div className="bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-indigo-600 h-2 rounded-full" 
-                  style={{ width: `${project.progress}%` }}
+                  style={{ width: `${project.progress || 0}%` }}
                 />
               </div>
               <div className="flex justify-between text-sm text-gray-500 mt-2">
-                <span>Progress: {project.progress}%</span>
+                <span>Progress: {project.progress || 0}%</span>
                 <span>Target: 100%</span>
               </div>
             </div>
@@ -80,7 +80,7 @@ export const ProjectDetails = ({ project, onBack }: ProjectDetailsProps) => {
             <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">Project Milestones</h2>
               <div className="space-y-4">
-                {project.milestones.map((milestone, index) => (
+                {(project.milestones || []).map((milestone, index) => (
                   <div key={index} className={`border-l-2 ${milestone.status === 'Completed' ? 'border-indigo-600' : 'border-gray-200'} pl-4`}>
                     <div className="font-medium">{milestone.title}</div>
                     <div className="text-sm text-gray-500">{milestone.description}</div>
@@ -174,7 +174,7 @@ export const ProjectDetails = ({ project, onBack }: ProjectDetailsProps) => {
                     </div>
                   </div>
                 </div>
-                <p className="text-gray-600">Phase 2 funding target of ${(project.fundingRaised / 1000000).toFixed(1)}M has been successfully reached. Thank you to all our investors!</p>
+                <p className="text-gray-600">Phase 2 funding target of ${((project.fundingRaised || 0) / 1000000).toFixed(1)}M has been successfully reached. Thank you to all our investors!</p>
                 <div className="flex items-center gap-4 mt-4">
                   <button className="flex items-center text-gray-500 hover:text-gray-700">
                     <MessageSquare className="h-4 w-4 mr-1" />

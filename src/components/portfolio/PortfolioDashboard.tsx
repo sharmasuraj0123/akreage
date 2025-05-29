@@ -1,27 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { Briefcase, Wallet, PieChart, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { createThirdwebClient, getContract, readContract } from 'thirdweb';
+import { getContract, readContract } from 'thirdweb';
 import { sepolia } from 'thirdweb/chains';
-import { Wallet, Clock, DollarSign, PieChart, TrendingUp, Briefcase } from 'lucide-react';
-import { formatCurrency } from '../../utils/formatters';
-import { mockRealEstateAssets } from '../../data/mockData';
+import { useAssets } from '../../hooks/useAssets';
 
-// Contract address for the NFT (Skyline Tower from mock data)
-const NFT_CONTRACT_ADDRESS = '0x3680FE6cc714d49F8a78e61D901032792b6fa773';
+const NFT_CONTRACT_ADDRESS = "0x3680FE6cc714d49F8a78e61D901032792b6fa773";
 
 const PortfolioDashboard: React.FC = () => {
-  const { user, isAuthenticated, walletAddress, client, connectWallet, isConnecting } = useAuth();
+  const { isAuthenticated, walletAddress, client } = useAuth();
+  const { assets } = useAssets();
   const [userNFTHoldings, setUserNFTHoldings] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [totalValue, setTotalValue] = useState<number>(0);
-  
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   useEffect(() => {
     const initializeWallet = async () => {
       if (!isAuthenticated || !walletAddress) {
-        setIsLoading(false);
+        setUserNFTHoldings(0);
+        setTotalValue(0);
         return;
       }
-      
+
       try {
         await fetchUserNFTHoldings(walletAddress);
       } catch (error) {
@@ -117,6 +124,13 @@ const PortfolioDashboard: React.FC = () => {
   // Skip rendering if not authenticated
   if (!isAuthenticated) return null;
 
+  // Get the first asset for display (fallback to placeholder if no assets)
+  const firstAsset = assets.length > 0 ? assets[0] : {
+    name: 'Sample Property',
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    location: 'Sample Location'
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-8">
       <div className="p-6">
@@ -184,13 +198,13 @@ const PortfolioDashboard: React.FC = () => {
                 <div className="divide-y divide-gray-100">
                   <div className="p-4 flex items-center">
                     <img 
-                      src={mockRealEstateAssets[0].image} 
-                      alt={mockRealEstateAssets[0].name} 
+                      src={firstAsset.image} 
+                      alt={firstAsset.name} 
                       className="w-16 h-16 rounded object-cover mr-4"
                     />
                     <div className="flex-grow">
-                      <h4 className="font-medium text-gray-900">{mockRealEstateAssets[0].name}</h4>
-                      <p className="text-sm text-gray-500">{mockRealEstateAssets[0].location}</p>
+                      <h4 className="font-medium text-gray-900">{firstAsset.name}</h4>
+                      <p className="text-sm text-gray-500">{firstAsset.location}</p>
                       <div className="mt-1 flex items-center">
                         <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                         <span className="text-sm font-medium text-green-600">

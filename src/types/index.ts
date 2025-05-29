@@ -56,6 +56,15 @@ export interface Project {
   location: string;
   totalFundingGoal: number; // Goal in AUSD
   totalFundingRaised: number; // Raised in AUSD
+  // Additional properties for builder dashboard
+  progress?: number;
+  status?: string;
+  duration?: number;
+  startDate?: string;
+  totalInvestment?: number;
+  fundingRaised?: number;
+  investorCount?: number;
+  milestones?: Milestone[];
 }
 
 export interface AUSDToken {

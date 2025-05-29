@@ -15,6 +15,10 @@ import HowItWorksPage from './components/how-it-works/HowItWorksPage';
 import { useAuth } from './context/AuthContext';
 import { mockRealEstateAssets, mockUsers, mockProjects } from './data/mockData';
 import GovernancePage from './components/governance/GovernancePage';
+// Builder components
+import { ProjectLaunchForm } from './components/builder/ProjectLaunchForm';
+import { DashboardContent } from './components/builder/DashboardContent';
+import { Stats } from './components/builder/Stats';
 
 function App() {
   const [currentPath, setCurrentPath] = useState('/');
@@ -95,8 +99,7 @@ function App() {
   };
   
   const handleCreate = () => {
-    console.log("Create project clicked");
-    // Implement project creation flow
+    handleNavigate('/builder/launch');
   };
 
   const renderContent = () => {
@@ -218,6 +221,24 @@ function App() {
       
       case '/how-it-works':
         return <HowItWorksPage />;
+      
+      // Builder routes
+      case '/builder':
+        return (
+          <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
+              <Stats />
+            </div>
+            <DashboardContent />
+          </div>
+        );
+      
+      case '/builder/launch':
+        return (
+          <div className="min-h-screen bg-gray-50 pt-16">
+            <ProjectLaunchForm />
+          </div>
+        );
       
       default:
         return (

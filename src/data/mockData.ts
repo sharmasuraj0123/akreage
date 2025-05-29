@@ -453,7 +453,16 @@ export const mockProjects: Project[] = [
     minInvestment: 40000, // AUSD
     location: 'Multiple US Cities',
     totalFundingGoal: 25000000, // AUSD
-    totalFundingRaised: 14500000 // AUSD
+    totalFundingRaised: 14500000, // AUSD
+    // Additional properties for builder dashboard
+    progress: 75,
+    status: 'In Progress',
+    duration: 18,
+    startDate: 'Jan 2024',
+    totalInvestment: 25000000,
+    fundingRaised: 14500000,
+    investorCount: 127,
+    milestones: mockMilestones.slice(0, 4)
   },
   {
     id: 'project2',
@@ -465,7 +474,16 @@ export const mockProjects: Project[] = [
     minInvestment: 75000, // AUSD
     location: 'Global',
     totalFundingGoal: 40000000, // AUSD
-    totalFundingRaised: 22000000 // AUSD
+    totalFundingRaised: 22000000, // AUSD
+    // Additional properties for builder dashboard
+    progress: 45,
+    status: 'Planning',
+    duration: 24,
+    startDate: 'Mar 2024',
+    totalInvestment: 40000000,
+    fundingRaised: 22000000,
+    investorCount: 89,
+    milestones: mockMilestones.slice(2, 6)
   },
   {
     id: 'project3',
@@ -477,6 +495,75 @@ export const mockProjects: Project[] = [
     minInvestment: 30000, // AUSD
     location: 'Resort Destinations',
     totalFundingGoal: 35000000, // AUSD
-    totalFundingRaised: 18000000 // AUSD
+    totalFundingRaised: 18000000, // AUSD
+    // Additional properties for builder dashboard
+    progress: 30,
+    status: 'Approval Pending',
+    duration: 36,
+    startDate: 'Jun 2024',
+    totalInvestment: 35000000,
+    fundingRaised: 18000000,
+    investorCount: 156,
+    milestones: mockMilestones.slice(1, 5)
+  },
+  {
+    id: 'project4',
+    name: 'Skyline Tower Complex',
+    description: 'Modern high-rise residential towers with panoramic city views and luxury amenities.',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
+    developer: 'user1',
+    properties: 6,
+    minInvestment: 50000,
+    location: 'New York, USA',
+    totalFundingGoal: 15000000,
+    totalFundingRaised: 11250000,
+    progress: 85,
+    status: 'Construction',
+    duration: 15,
+    startDate: 'Sep 2023',
+    totalInvestment: 15000000,
+    fundingRaised: 11250000,
+    investorCount: 203,
+    milestones: mockMilestones.slice(0, 6)
+  },
+  {
+    id: 'project5',
+    name: 'Green Valley Residences',
+    description: 'Eco-friendly residential development with sustainable building practices and green spaces.',
+    image: 'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
+    developer: 'user2',
+    properties: 4,
+    minInvestment: 35000,
+    location: 'Portland, USA',
+    totalFundingGoal: 8000000,
+    totalFundingRaised: 3600000,
+    progress: 45,
+    status: 'Funding',
+    duration: 20,
+    startDate: 'Feb 2024',
+    totalInvestment: 8000000,
+    fundingRaised: 3600000,
+    investorCount: 67,
+    milestones: mockMilestones.slice(2, 7)
+  },
+  {
+    id: 'project6',
+    name: 'Urban Heights Complex',
+    description: 'Mixed-use development combining residential, commercial, and retail spaces in downtown area.',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
+    developer: 'user3',
+    properties: 8,
+    minInvestment: 60000,
+    location: 'Miami, USA',
+    totalFundingGoal: 20000000,
+    totalFundingRaised: 0,
+    progress: 0,
+    status: 'Approval Pending',
+    duration: 30,
+    startDate: 'TBD',
+    totalInvestment: 20000000,
+    fundingRaised: 0,
+    investorCount: 0,
+    milestones: mockMilestones.slice(0, 3)
   }
 ];

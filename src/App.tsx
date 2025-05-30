@@ -193,25 +193,8 @@ function App() {
         return (
           <>
             <Hero onExplore={handleExplore} onCreate={handleCreate} />
-            
-            <div className="container mx-auto px-4 py-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Properties</h2>
-              <NFTGrid 
-                properties={mockRealEstateAssets.slice(0, 3)}
-                onPropertyClick={handlePropertyClick}
-                onLikeProperty={handleLikeProperty}
-                likedProperties={likedProperties}
-              />
-            </div>
-          </>
-        );
-      
-      case '/properties':
-        return (
-          <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">All Properties</h1>
             <NFTGrid 
-              properties={mockRealEstateAssets.slice(0, 3)}
+              properties={assets.slice(0, 6)}
               onPropertyClick={handlePropertyClick}
               onLikeProperty={handleLikeProperty}
               likedProperties={likedProperties}

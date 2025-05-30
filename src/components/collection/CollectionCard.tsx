@@ -1,6 +1,7 @@
 import React from 'react';
 import { Project } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
+import { useAuth } from '../../context/AuthContext';
 
 interface ProjectCardProps {
   project: Project;
@@ -8,6 +9,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
+  const { isAuthenticated } = useAuth();
   const fundingPercentage = (project.totalFundingRaised / project.totalFundingGoal) * 100;
   const spotsLeft = project.totalFundingGoal - project.totalFundingRaised;
   
@@ -36,7 +38,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
         
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
-            <span>{spotsLeft}/{project.totalFundingGoal} Investor spots left</span>
+            <span>{isAuthenticated ? `Only ${spotsLeft} Investor Spots Left!` : `${spotsLeft}/${project.totalFundingGoal} investor spots left`}</span>
             <span>{fundingPercentage.toFixed(0)}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">

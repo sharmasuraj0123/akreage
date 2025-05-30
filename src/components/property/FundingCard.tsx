@@ -121,7 +121,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
       
       <div className="mb-3">
         <div className="flex justify-between text-sm mb-1">
-          <span>{tokensAvailable}/{fundingGoal} Investor spots left</span>
+          <span>{isAuthenticated ? `Only ${tokensAvailable} Investor Spots Left!` : `${tokensAvailable}/${fundingGoal} investor spots left`}</span>
           <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
@@ -134,7 +134,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
       
       <div className="flex justify-between text-sm text-gray-500 mb-4">
         <span>{isLoading ? "Loading..." : `${formatCurrency(fundingRaised)} AUSD raised`}</span>
-        <span>Goal: {isLoading ? "Loading..." : `${formatCurrency(fundingGoal)} AUSD`}</span>
+        <span>Total Raise: {isLoading ? "Loading..." : `${formatCurrency(fundingGoal)} AUSD`}</span>
       </div>
       
       {nftContractAddress && !isLoading && (

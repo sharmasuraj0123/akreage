@@ -3,6 +3,7 @@ import { Heart } from 'lucide-react';
 import { RealEstateAsset } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { getClaimConditionData } from '../../utils/blockchain';
+import { useAuth } from '../../context/AuthContext';
 
 interface NFTCardProps {
   property: RealEstateAsset;
@@ -16,26 +17,27 @@ interface ClaimData {
 }
 
 const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
+  const { isAuthenticated } = useAuth();
   const [claimData, setClaimData] = useState<ClaimData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
   // Calculate funding percentage based on either blockchain data or mock data
   const fundingPercentage = claimData 
     ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
-    : (property.fundingRaised / property.fundingGoal) * 100;
+    : ((property.fundingRaised || 0) / (property.fundingGoal || 1)) * 100;
   
   // Set actual funding raised and goal based on blockchain data when available
   const fundingRaised = claimData 
     ? Number(claimData.supplyClaimed)
-    : property.fundingRaised;
+    : (property.fundingRaised || 0);
   
   const fundingGoal = claimData 
     ? Number(claimData.maxClaimableSupply)
-    : property.fundingGoal;
+    : (property.fundingGoal || 0);
   
   const tokensAvailable = claimData 
     ? Number(claimData.maxClaimableSupply - claimData.supplyClaimed)
-    : property.fundingGoal - property.fundingRaised;
+    : (property.fundingGoal || 0) - (property.fundingRaised || 0);
   
   useEffect(() => {
     // Only fetch blockchain data if this property has an NFT contract address
@@ -108,7 +110,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
         
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
-            <span>{tokensAvailable}/{fundingGoal} Investor spots left</span>
+            <span>{isAuthenticated ? `Only ${tokensAvailable} Investor Spots Left!` : `${tokensAvailable}/${fundingGoal} investor spots left`}</span>
             <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -124,7 +126,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
             <span className="block text-gray-900 font-medium">
               {isLoading ? "Loading..." : `${formatCurrency(fundingRaised)} AUSD`}
             </span>
-            <span>Raised</span>
+            <span>Raised of {formatCurrency(fundingGoal)} AUSD Goal</span>
           </div>
         </div>
       </div>

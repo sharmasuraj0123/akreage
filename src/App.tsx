@@ -48,7 +48,7 @@ function App() {
   
   // Get properties by developer
   const propertiesByDeveloper = selectedDeveloperId
-    ? assets.filter(p => p.developer_id === selectedDeveloperId)
+    ? assets.filter(p => p.developer === selectedDeveloperId)
     : [];
   
   // Get projects by developer

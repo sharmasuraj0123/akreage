@@ -451,4 +451,65 @@ export async function purchaseNFT(contractAddress: string, quantity: number = 1)
       error: error instanceof Error ? error.message : "Unknown error occurred",
     };
   }
+}
+
+/**
+ * Get user NFT holdings across multiple contract addresses
+ */
+export async function getUserNFTHoldings(contractAddresses: string[], userAddress: string) {
+  try {
+    const holdings: { [contractAddress: string]: number } = {};
+    
+    for (const contractAddress of contractAddresses) {
+      try {
+        const contract = getContract({
+          client,
+          chain: sepolia,
+          address: contractAddress,
+          abi: [
+            {
+              name: "getActiveClaimConditionId",
+              type: "function",
+              stateMutability: "view",
+              inputs: [],
+              outputs: [{ name: "", type: "uint256" }],
+            },
+            {
+              name: "getSupplyClaimedByWallet",
+              type: "function",
+              stateMutability: "view",
+              inputs: [
+                { name: "_conditionId", type: "uint256" },
+                { name: "_claimer", type: "address" }
+              ],
+              outputs: [{ name: "supplyClaimedByWallet", type: "uint256" }],
+            },
+          ],
+        });
+        
+        // Get active condition ID
+        const conditionId = await readContract({
+          contract,
+          method: "getActiveClaimConditionId",
+        });
+        
+        // Get user's claimed tokens for this contract
+        const userHoldings = await readContract({
+          contract,
+          method: "getSupplyClaimedByWallet",
+          params: [conditionId, userAddress],
+        });
+        
+        holdings[contractAddress] = Number(userHoldings);
+      } catch (error) {
+        console.error(`Error fetching holdings for contract ${contractAddress}:`, error);
+        holdings[contractAddress] = 0;
+      }
+    }
+    
+    return holdings;
+  } catch (error) {
+    console.error("Error fetching user NFT holdings:", error);
+    return {};
+  }
 } 

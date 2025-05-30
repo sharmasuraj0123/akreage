@@ -4,6 +4,7 @@ import { RealEstateAsset, Milestone } from '../../types';
 import Button from '../ui/Button';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getClaimConditionData, executeNFTClaim, isUserConnected, connectUserWallet } from '../../utils/blockchain';
+import { useAuth } from '../../context/AuthContext';
 
 interface PropertyDetailProps {
   property: RealEstateAsset;
@@ -192,6 +193,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   onLike,
   isLiked
 }) => {
+  const { isAuthenticated } = useAuth();
   const [claimData, setClaimData] = useState<ClaimData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -203,20 +205,20 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   // Calculate funding percentage based on either blockchain data or mock data
   const fundingPercentage = claimData 
     ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
-    : (property.fundingRaised / property.fundingGoal) * 100;
+    : ((property.fundingRaised || 0) / (property.fundingGoal || 1)) * 100;
   
   // Set actual funding raised and goal based on blockchain data when available
   const fundingRaised = claimData 
     ? Number(claimData.supplyClaimed)
-    : property.fundingRaised;
+    : (property.fundingRaised || 0);
   
   const fundingGoal = claimData 
     ? Number(claimData.maxClaimableSupply)
-    : property.fundingGoal;
+    : (property.fundingGoal || 0);
   
   const tokensAvailable = claimData 
     ? Number(claimData.maxClaimableSupply - claimData.supplyClaimed)
-    : property.fundingGoal - property.fundingRaised;
+    : (property.fundingGoal || 0) - (property.fundingRaised || 0);
   
   // Check if user is connected on component mount
   useEffect(() => {
@@ -508,7 +510,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             
             <div className="mb-3">
               <div className="flex justify-between text-sm mb-1">
-                <span>{tokensAvailable}/{fundingGoal} Investor spots left</span>
+                <span>{isAuthenticated ? `Only ${tokensAvailable} Investor Spots Left!` : `${tokensAvailable}/${fundingGoal} investor spots left`}</span>
                 <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
@@ -521,7 +523,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             
             <div className="flex justify-between text-sm text-gray-500 mb-4">
               <span>{isLoading ? "Loading..." : `${formatCurrency(fundingRaised)} AUSD raised`}</span>
-              <span>Goal: {isLoading ? "Loading..." : `${formatCurrency(fundingGoal)} AUSD`}</span>
+              <span>Total Raise: {isLoading ? "Loading..." : `${formatCurrency(fundingGoal)} AUSD`}</span>
             </div>
             
             {property.nftContractAddress && !isLoading && (

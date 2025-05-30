@@ -62,7 +62,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
   };
   
   return (
-    <div>
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <div className="relative flex-1 max-w-md">

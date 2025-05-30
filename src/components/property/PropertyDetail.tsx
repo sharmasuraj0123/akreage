@@ -22,6 +22,9 @@ interface ClaimData {
   conditionId?: bigint;
 }
 
+// Fallback image URL for when images fail to load
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80';
+
 // Token Purchase Modal Component
 const PurchaseModal: React.FC<{
   onClose: () => void;
@@ -201,6 +204,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | undefined>(undefined);
   const [isUserWalletConnected, setIsUserWalletConnected] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
   
   // Calculate funding percentage based on either blockchain data or mock data
   const fundingPercentage = claimData 
@@ -269,6 +273,17 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   const [currentImage, setCurrentImage] = useState(0);
   const goPrev = () => setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   const goNext = () => setCurrentImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: true }));
+  };
+
+  const getImageSrc = (index: number) => {
+    if (imageErrors[index]) {
+      return FALLBACK_IMAGE;
+    }
+    return images[index] || FALLBACK_IMAGE;
+  };
 
   const handleInvestClick = async () => {
     if (!property.nftContractAddress) {
@@ -354,9 +369,10 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
         <div className="lg:col-span-2">
           <div className="relative rounded-xl overflow-hidden mb-6">
             <img 
-              src={images[currentImage]} 
+              src={getImageSrc(currentImage)} 
               alt={property.name} 
               className="w-full h-auto object-cover transition-all duration-300"
+              onError={() => handleImageError(currentImage)}
             />
             {images.length > 1 && (
               <>

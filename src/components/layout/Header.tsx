@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { Menu, X, Search, ChevronDown, User, Settings, LogOut, Wallet } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import { ClaimButton, ConnectButton } from "thirdweb/react";
@@ -15,6 +15,10 @@ const wallets = [
   createWallet("io.zerion.wallet"),
 ];
 
+// Fallback images
+const FALLBACK_LOGO = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzQ5NDZlNSIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiPkE8L3RleHQ+Cjwvc3ZnPgo=';
+const FALLBACK_AVATAR = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80';
+
 interface HeaderProps {
   onNavigate: (path: string) => void;
   currentPath: string;
@@ -23,8 +27,10 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { isAuthenticated, user, logout, client, connectWallet } = useAuth();
+  const [logoError, setLogoError] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated, user, logout, client, connectWallet } = useAuth();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -113,9 +119,10 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             onClick={() => onNavigate('/')}
           >
             <img 
-              src="/logo.png" 
+              src={logoError ? FALLBACK_LOGO : "/logo.png"} 
               alt="Akreage Logo" 
               className="w-8 h-8 object-contain"
+              onError={() => setLogoError(true)}
             />
             <span className="text-xl font-bold text-gray-900">Akreage</span>
           </div>
@@ -157,9 +164,10 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
                   >
                     <div className="relative">
                       <img
-                        src={user?.avatar}
+                        src={avatarError ? FALLBACK_AVATAR : (user?.avatar || FALLBACK_AVATAR)}
                         alt={user?.name}
                         className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
+                        onError={() => setAvatarError(true)}
                       />
                       <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white" />
                     </div>
@@ -240,9 +248,10 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             <div className="px-4 py-3 border-t border-gray-200">
               <div className="flex items-center space-x-3 mb-4">
                 <img
-                  src={user?.avatar}
+                  src={avatarError ? FALLBACK_AVATAR : (user?.avatar || FALLBACK_AVATAR)}
                   alt={user?.name}
                   className="h-10 w-10 rounded-full object-cover ring-2 ring-white"
+                  onError={() => setAvatarError(true)}
                 />
                 <div>
                   <div className="font-medium text-gray-900">{user?.name}</div>

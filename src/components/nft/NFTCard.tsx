@@ -5,6 +5,9 @@ import { formatCurrency } from '../../utils/formatters';
 import { getClaimConditionData } from '../../utils/blockchain';
 import { useAuth } from '../../context/AuthContext';
 
+// Fallback image URL for when images fail to load
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80';
+
 interface NFTCardProps {
   property: RealEstateAsset;
   onLike: (id: string) => void;
@@ -20,6 +23,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
   const { isAuthenticated } = useAuth();
   const [claimData, setClaimData] = useState<ClaimData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   // Calculate funding percentage based on either blockchain data or mock data
   const fundingPercentage = claimData 
@@ -75,9 +79,10 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
     >
       <div className="relative h-48">
         <img 
-          src={property.image} 
+          src={imageError ? FALLBACK_IMAGE : (property.image || FALLBACK_IMAGE)} 
           alt={property.name} 
           className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
         />
         <button 
           className={`absolute top-3 right-3 p-2 rounded-full ${

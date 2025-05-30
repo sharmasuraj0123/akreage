@@ -21,7 +21,6 @@ const NFTGrid: React.FC<NFTGridProps> = ({
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 15000000]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [returnRange, setReturnRange] = useState<[number, number]>([0, 15]);
   
   // Get unique locations from properties
   const locations = Array.from(new Set(properties.map(p => p.location)));
@@ -40,10 +39,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
     // Location filter
     const matchesLocation = selectedLocations.length === 0 || selectedLocations.includes(property.location);
     
-    // Return filter
-    const matchesReturn = property.expectedReturn >= returnRange[0] && property.expectedReturn <= returnRange[1];
-    
-    return matchesSearch && matchesPrice && matchesLocation && matchesReturn;
+    return matchesSearch && matchesPrice && matchesLocation;
   });
   
   // Update properties with current like status
@@ -63,11 +59,10 @@ const NFTGrid: React.FC<NFTGridProps> = ({
   const clearFilters = () => {
     setPriceRange([0, 15000000]);
     setSelectedLocations([]);
-    setReturnRange([0, 15]);
   };
   
   return (
-    <div>
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <div className="relative flex-1 max-w-md">
@@ -102,7 +97,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
               </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Price Range Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -148,26 +143,6 @@ const NFTGrid: React.FC<NFTGridProps> = ({
                   ))}
                 </div>
               </div>
-              
-              {/* Expected Return Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Expected Return (%)
-                </label>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-500">{returnRange[0]}%</span>
-                  <span className="text-sm text-gray-500">{returnRange[1]}%</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="15" 
-                  step="0.5"
-                  value={returnRange[1]}
-                  onChange={(e) => setReturnRange([returnRange[0], parseFloat(e.target.value)])}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
             </div>
             
             {selectedLocations.length > 0 && (
@@ -197,7 +172,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
           <p className="text-gray-500">No properties found matching your criteria.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {propertiesWithLikes.map(property => (
             <NFTCard 
               key={property.id} 

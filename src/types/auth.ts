@@ -4,6 +4,7 @@ export interface UserProfile {
   email: string;
   avatar: string;
   walletBalance: number;
+  walletAddress?: string;
   bio?: string;
   followers?: number;
   following?: number;

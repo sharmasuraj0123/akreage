@@ -4,6 +4,7 @@ import { RealEstateAsset, Milestone } from '../../types';
 import Button from '../ui/Button';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getClaimConditionData, executeNFTClaim, isUserConnected, connectUserWallet } from '../../utils/blockchain';
+import { useAuth } from '../../context/AuthContext';
 
 interface PropertyDetailProps {
   property: RealEstateAsset;
@@ -20,6 +21,9 @@ interface ClaimData {
   quantityLimitPerWallet?: bigint;
   conditionId?: bigint;
 }
+
+// Fallback image URL for when images fail to load
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80';
 
 // Token Purchase Modal Component
 const PurchaseModal: React.FC<{
@@ -192,6 +196,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   onLike,
   isLiked
 }) => {
+  const { isAuthenticated } = useAuth();
   const [claimData, setClaimData] = useState<ClaimData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -199,24 +204,25 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | undefined>(undefined);
   const [isUserWalletConnected, setIsUserWalletConnected] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
   
   // Calculate funding percentage based on either blockchain data or mock data
   const fundingPercentage = claimData 
     ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
-    : (property.fundingRaised / property.fundingGoal) * 100;
+    : ((property.fundingRaised || 0) / (property.fundingGoal || 1)) * 100;
   
   // Set actual funding raised and goal based on blockchain data when available
   const fundingRaised = claimData 
     ? Number(claimData.supplyClaimed)
-    : property.fundingRaised;
+    : (property.fundingRaised || 0);
   
   const fundingGoal = claimData 
     ? Number(claimData.maxClaimableSupply)
-    : property.fundingGoal;
+    : (property.fundingGoal || 0);
   
   const tokensAvailable = claimData 
     ? Number(claimData.maxClaimableSupply - claimData.supplyClaimed)
-    : property.fundingGoal - property.fundingRaised;
+    : (property.fundingGoal || 0) - (property.fundingRaised || 0);
   
   // Check if user is connected on component mount
   useEffect(() => {
@@ -267,6 +273,17 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
   const [currentImage, setCurrentImage] = useState(0);
   const goPrev = () => setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   const goNext = () => setCurrentImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: true }));
+  };
+
+  const getImageSrc = (index: number) => {
+    if (imageErrors[index]) {
+      return FALLBACK_IMAGE;
+    }
+    return images[index] || FALLBACK_IMAGE;
+  };
 
   const handleInvestClick = async () => {
     if (!property.nftContractAddress) {
@@ -352,9 +369,10 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
         <div className="lg:col-span-2">
           <div className="relative rounded-xl overflow-hidden mb-6">
             <img 
-              src={images[currentImage]} 
+              src={getImageSrc(currentImage)} 
               alt={property.name} 
               className="w-full h-auto object-cover transition-all duration-300"
+              onError={() => handleImageError(currentImage)}
             />
             {images.length > 1 && (
               <>
@@ -491,17 +509,13 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
                 <span className="text-xl font-bold text-gray-900">{formatCurrency(property.price)} AUSD</span>
               </div>
               <div className="text-right">
-                <span className="block text-sm text-gray-500">Expected Return</span>
-                <span className="text-xl font-bold text-indigo-600">{property.expectedReturn}%</span>
+                <span className="block text-sm text-gray-500">Token Symbol</span>
+                <span className="text-xl font-bold text-indigo-600">{property.tokenSymbol}</span>
               </div>
             </div>
             
             <div className="flex justify-between mb-4">
               <div>
-                <span className="block text-sm text-gray-500">Token Symbol</span>
-                <span className="font-medium">{property.tokenSymbol}</span>
-              </div>
-              <div className="text-right">
                 <span className="block text-sm text-gray-500">Funding Deadline</span>
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-1 text-gray-400" />
@@ -512,7 +526,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             
             <div className="mb-3">
               <div className="flex justify-between text-sm mb-1">
-                <span>Funding Progress</span>
+                <span>{isAuthenticated ? `Only ${tokensAvailable} Investor Spots Left!` : `${tokensAvailable}/${fundingGoal} investor spots left`}</span>
                 <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
@@ -525,7 +539,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             
             <div className="flex justify-between text-sm text-gray-500 mb-4">
               <span>{isLoading ? "Loading..." : `${formatCurrency(fundingRaised)} AUSD raised`}</span>
-              <span>Goal: {isLoading ? "Loading..." : `${formatCurrency(fundingGoal)} AUSD`}</span>
+              <span>Total Raise: {isLoading ? "Loading..." : `${formatCurrency(fundingGoal)} AUSD`}</span>
             </div>
             
             {property.nftContractAddress && !isLoading && (
@@ -578,15 +592,15 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
             <ul className="space-y-2">
               <li className="flex items-start">
                 <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-600">Projected annual return of {property.expectedReturn}% based on rental income and property appreciation.</span>
-              </li>
-              <li className="flex items-start">
-                <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-600">Prime location with strong rental demand and growth potential.</span>
               </li>
               <li className="flex items-start">
                 <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-600">Professionally managed with quarterly distributions to token holders.</span>
+              </li>
+              <li className="flex items-start">
+                <TrendingUp className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-600">Transparent blockchain-based ownership and transaction history.</span>
               </li>
             </ul>
           </div>

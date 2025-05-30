@@ -3,6 +3,7 @@ import { User, Mail, Gift, Calendar, Edit, Save, X, Wallet, DollarSign } from 'l
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
 import PortfolioDashboard from '../portfolio/PortfolioDashboard';
+import { formatCurrency } from '../../utils/formatters';
 
 const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, walletAddress, connectWallet, portfolio } = useAuth();
@@ -240,8 +241,8 @@ const ProfilePage: React.FC = () => {
                 <p className="text-2xl font-bold text-indigo-600">{portfolio?.totalInvestments || 0}</p>
               </div>
               <div className="text-center p-3 bg-gray-50 rounded-lg">
-                <p className="text-gray-500 text-sm">Returns</p>
-                <p className="text-2xl font-bold text-green-600">+{portfolio?.returns || 0}%</p>
+                <p className="text-gray-500 text-sm">Portfolio Value</p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(portfolio?.totalValue || 0)} AUSD</p>
               </div>
             </div>
           </div>

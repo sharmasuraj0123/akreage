@@ -3,6 +3,10 @@ import { Heart } from 'lucide-react';
 import { RealEstateAsset } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { getClaimConditionData } from '../../utils/blockchain';
+import { useAuth } from '../../context/AuthContext';
+
+// Fallback image URL for when images fail to load
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80';
 
 interface NFTCardProps {
   property: RealEstateAsset;
@@ -16,22 +20,28 @@ interface ClaimData {
 }
 
 const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
+  const { isAuthenticated } = useAuth();
   const [claimData, setClaimData] = useState<ClaimData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   // Calculate funding percentage based on either blockchain data or mock data
   const fundingPercentage = claimData 
     ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
-    : (property.fundingRaised / property.fundingGoal) * 100;
+    : ((property.fundingRaised || 0) / (property.fundingGoal || 1)) * 100;
   
   // Set actual funding raised and goal based on blockchain data when available
   const fundingRaised = claimData 
     ? Number(claimData.supplyClaimed)
-    : property.fundingRaised;
+    : (property.fundingRaised || 0);
   
   const fundingGoal = claimData 
     ? Number(claimData.maxClaimableSupply)
-    : property.fundingGoal;
+    : (property.fundingGoal || 0);
+  
+  const tokensAvailable = claimData 
+    ? Number(claimData.maxClaimableSupply - claimData.supplyClaimed)
+    : (property.fundingGoal || 0) - (property.fundingRaised || 0);
   
   useEffect(() => {
     // Only fetch blockchain data if this property has an NFT contract address
@@ -69,9 +79,10 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
     >
       <div className="relative h-48">
         <img 
-          src={property.image} 
+          src={imageError ? FALLBACK_IMAGE : (property.image || FALLBACK_IMAGE)} 
           alt={property.name} 
           className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
         />
         <button 
           className={`absolute top-3 right-3 p-2 rounded-full ${
@@ -104,7 +115,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
         
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
-            <span>Funding Progress</span>
+            <span>{isAuthenticated ? `Only ${tokensAvailable} Investor Spots Left!` : `${tokensAvailable}/${fundingGoal} investor spots left`}</span>
             <span>{isLoading ? "Loading..." : `${Math.min(fundingPercentage, 100).toFixed(0)}%`}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -120,7 +131,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
             <span className="block text-gray-900 font-medium">
               {isLoading ? "Loading..." : `${formatCurrency(fundingRaised)} AUSD`}
             </span>
-            <span>Raised</span>
+            <span>Raised of {formatCurrency(fundingGoal)} AUSD Goal</span>
           </div>
         </div>
       </div>

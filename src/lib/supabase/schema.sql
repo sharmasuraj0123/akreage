@@ -116,8 +116,9 @@ CREATE INDEX idx_user_likes_project ON user_project_likes(project_id);
 CREATE INDEX idx_users_wallet_address ON users(wallet_address);
 
 -- Enable Row Level Security (RLS)
--- Note: RLS is disabled for users table since we use wallet-based authentication
--- ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+-- Note: We're using a more permissive approach since we're using wallet-based authentication
+-- and don't have traditional Supabase auth integration
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE milestones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
@@ -126,34 +127,21 @@ ALTER TABLE ausd_token ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
 
--- Users: RLS disabled - managed through application logic with wallet authentication
--- No RLS policies needed for users table
+-- Users: Allow all operations since we handle auth at application level
+CREATE POLICY "Allow all user operations" ON users FOR ALL USING (true);
 
--- Projects: Everyone can read approved projects, but we'll simplify since no Supabase auth
-CREATE POLICY "Anyone can view approved projects" ON projects FOR SELECT USING (approved = true);
-CREATE POLICY "Allow project creation" ON projects FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow project updates" ON projects FOR UPDATE USING (true);
-CREATE POLICY "Allow project deletion" ON projects FOR DELETE USING (true);
+-- Projects: Allow all operations for now since we're using wallet-based auth
+-- In production, you might want to restrict based on wallet ownership
+CREATE POLICY "Allow all project operations" ON projects FOR ALL USING (true);
 
--- Milestones: Readable by all for approved projects
-CREATE POLICY "Milestones readable for approved projects" ON milestones FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM projects p WHERE p.id = project_id AND p.approved = true
-  )
-);
-CREATE POLICY "Allow milestone management" ON milestones FOR ALL USING (true);
+-- Milestones: Allow all operations
+CREATE POLICY "Allow all milestone operations" ON milestones FOR ALL USING (true);
 
--- Documents: Similar to milestones
-CREATE POLICY "Documents readable for approved projects" ON documents FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM projects p WHERE p.id = project_id AND p.approved = true
-  )
-);
-CREATE POLICY "Allow document management" ON documents FOR ALL USING (true);
+-- Documents: Allow all operations
+CREATE POLICY "Allow all document operations" ON documents FOR ALL USING (true);
 
--- User likes: Users can manage their own likes (simplified)
-CREATE POLICY "Users can view all likes" ON user_project_likes FOR SELECT USING (true);
-CREATE POLICY "Allow like management" ON user_project_likes FOR ALL USING (true);
+-- User likes: Allow all operations
+CREATE POLICY "Allow all like operations" ON user_project_likes FOR ALL USING (true);
 
--- AUSD Token: Read-only for all users
-CREATE POLICY "Anyone can view token info" ON ausd_token FOR SELECT USING (true); 
+-- AUSD Token: Allow all operations (mainly read, but allow management)
+CREATE POLICY "Allow all token operations" ON ausd_token FOR ALL USING (true); 

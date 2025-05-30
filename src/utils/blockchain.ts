@@ -17,6 +17,7 @@ let userConnected = localStorage.getItem(WALLET_CONNECTED_KEY) === 'true';
 // We're using 'any' type here because the exact account type from thirdweb isn't easily accessible
 // This represents a wallet account with at least an 'address' property
 let connectedAccount: any = null;
+let walletInstance: any = null;
 
 /**
  * Get claim condition data for an NFT contract.
@@ -285,28 +286,44 @@ export async function isUserConnected() {
   const storedAddress = localStorage.getItem(WALLET_ADDRESS_KEY);
   
   // If we have stored connection info and in-memory account, use it
-  if (storedConnected && storedAddress && connectedAccount) {
-    return true;
+  if (storedConnected && storedAddress && connectedAccount && walletInstance) {
+    try {
+      // Verify the connection is still valid
+      const isConnected = walletInstance.getAccount();
+      if (isConnected && isConnected.address === storedAddress) {
+        return true;
+      }
+    } catch (error) {
+      console.log('Stored connection invalid, will attempt reconnect');
+    }
   }
   
   // If we have stored connection but no in-memory account, try to recover it
-  if (storedConnected && storedAddress && !connectedAccount) {
+  if (storedConnected && storedAddress) {
     try {
-      // Try to reconnect silently using the stored info
+      console.log("Attempting to restore wallet connection...");
       const wallet = inAppWallet();
-      connectedAccount = await wallet.connect({ 
-        client, 
-        strategy: "google"
-        // ThirdWeb doesn't support silent reconnection directly
+      
+      // Try to auto-connect using stored session
+      const account = await wallet.autoConnect({ 
+        client,
       });
-      userConnected = true;
-      return true;
+      
+      if (account && account.address === storedAddress) {
+        connectedAccount = account;
+        walletInstance = wallet;
+        userConnected = true;
+        console.log("Successfully restored wallet connection");
+        return true;
+      }
     } catch (error) {
-      console.error("Failed to reconnect:", error);
+      console.log("Auto-connect failed, clearing stored state");
       // Clear invalid stored state
       localStorage.removeItem(WALLET_CONNECTED_KEY);
       localStorage.removeItem(WALLET_ADDRESS_KEY);
       userConnected = false;
+      connectedAccount = null;
+      walletInstance = null;
       return false;
     }
   }
@@ -319,57 +336,62 @@ export async function isUserConnected() {
  */
 export async function connectUserWallet() {
   try {
-    // If user is already connected, reuse the existing account
-    if (userConnected && connectedAccount) {
-      console.log("User already connected, reusing account");
-      return connectedAccount;
+    // If user is already connected and wallet is valid, reuse the existing account
+    if (userConnected && connectedAccount && walletInstance) {
+      try {
+        const currentAccount = walletInstance.getAccount();
+        if (currentAccount && currentAccount.address === connectedAccount.address) {
+          console.log("User already connected, reusing account");
+          return connectedAccount;
+        }
+      } catch (error) {
+        console.log("Existing connection invalid, creating new connection");
+      }
     }
     
-    // If we have stored data but no active connection, try to reconnect
-    const storedConnected = localStorage.getItem(WALLET_CONNECTED_KEY) === 'true';
-    const storedAddress = localStorage.getItem(WALLET_ADDRESS_KEY);
+    // Create a new wallet instance
+    const wallet = inAppWallet();
     
-    if (storedConnected && storedAddress) {
-      try {
-        console.log("Attempting reconnect using stored credentials");
-        const wallet = inAppWallet();
-        connectedAccount = await wallet.connect({ 
-          client, 
-          strategy: "google"
-        });
+    // First try to auto-connect if there's a stored session
+    try {
+      console.log("Attempting auto-connect...");
+      const autoAccount = await wallet.autoConnect({ client });
+      if (autoAccount) {
+        console.log("Auto-connect successful");
+        connectedAccount = autoAccount;
+        walletInstance = wallet;
         userConnected = true;
         
         // Update localStorage
         localStorage.setItem(WALLET_CONNECTED_KEY, 'true');
-        localStorage.setItem(WALLET_ADDRESS_KEY, connectedAccount.address);
+        localStorage.setItem(WALLET_ADDRESS_KEY, autoAccount.address);
         
-        return connectedAccount;
-      } catch (error) {
-        console.error("Reconnect failed, proceeding with normal connection");
-        // Clear invalid stored state
-        localStorage.removeItem(WALLET_CONNECTED_KEY);
-        localStorage.removeItem(WALLET_ADDRESS_KEY);
+        return autoAccount;
       }
+    } catch (error) {
+      console.log("Auto-connect failed, proceeding with manual connection");
     }
     
-    // Otherwise, create a new connection
-    const wallet = inAppWallet();
-    // Store the account for future reuse across the session
+    // If auto-connect fails, do manual connection
+    console.log("Connecting wallet manually...");
     connectedAccount = await wallet.connect({ 
       client, 
       strategy: "google"
     });
+    walletInstance = wallet;
     userConnected = true;
     
     // Store in localStorage
     localStorage.setItem(WALLET_CONNECTED_KEY, 'true');
     localStorage.setItem(WALLET_ADDRESS_KEY, connectedAccount.address);
     
+    console.log("Wallet connected successfully:", connectedAccount.address);
     return connectedAccount;
   } catch (error) {
     console.error("Error connecting wallet:", error);
     userConnected = false;
     connectedAccount = null;
+    walletInstance = null;
     
     // Clear localStorage
     localStorage.removeItem(WALLET_CONNECTED_KEY);
@@ -383,8 +405,17 @@ export async function connectUserWallet() {
  * Disconnect user wallet
  */
 export async function disconnectUserWallet() {
+  try {
+    if (walletInstance) {
+      await walletInstance.disconnect();
+    }
+  } catch (error) {
+    console.error("Error disconnecting wallet:", error);
+  }
+  
   userConnected = false;
   connectedAccount = null;
+  walletInstance = null;
   
   // Clear localStorage
   localStorage.removeItem(WALLET_CONNECTED_KEY);

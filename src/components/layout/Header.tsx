@@ -83,9 +83,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
       </button>
       <div className="h-px bg-gray-200 my-1" />
       <button
-        onClick={() => {
-          logout();
+        onClick={async () => {
           setShowProfileMenu(false);
+          await logout();
         }}
         className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
       >
@@ -264,9 +264,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
                   Settings
                 </button>
                 <button
-                  onClick={() => { 
-                    logout();
-                    setIsMenuOpen(false); 
+                  onClick={async () => { 
+                    setIsMenuOpen(false);
+                    await logout();
                   }}
                   className="block w-full text-left px-3 py-2 text-sm rounded-md text-red-600 hover:bg-gray-50"
                 >

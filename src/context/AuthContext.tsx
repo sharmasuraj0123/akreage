@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserProfile, Portfolio, AuthContextType } from '../types/auth';
 import { createThirdwebClient } from "thirdweb";
-import { useActiveAccount, useActiveWallet, useDisconnect } from "thirdweb/react";
+import { useActiveAccount, useActiveWallet, useDisconnect, useAutoConnect } from "thirdweb/react";
 import { isUserConnected, connectUserWallet, disconnectUserWallet } from '../utils/blockchain';
 import { findOrCreateUserByWallet, linkWalletToUser } from '../lib/supabase/database';
 import { inAppWallet } from 'thirdweb/wallets';
@@ -60,40 +60,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const account = useActiveAccount();
   const { disconnect } = useDisconnect();
   
+  // Enable auto-connect for thirdweb
+  const { data: autoConnectData } = useAutoConnect({
+    client,
+    wallets: [inAppWallet()],
+    timeout: 10000,
+  });
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [initializationComplete, setInitializationComplete] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
+
+  // Force re-render function
+  const triggerUpdate = () => setForceUpdate(prev => prev + 1);
 
   // Initialize state from storage on mount
   useEffect(() => {
     const initAuthState = async () => {
-      console.log('AuthContext: Initializing auth state');
-      // First check our blockchain connection
-      const isConnected = await isUserConnected();
-      console.log('AuthContext: Blockchain connection status:', isConnected);
+      if (initializationComplete) return;
       
-      if (isConnected) {
-        // We're connected via blockchain utils
-        setIsAuthenticated(true);
+      console.log('AuthContext: Initializing auth state');
+      
+      try {
+        // First check our blockchain connection
+        const isConnected = await isUserConnected();
+        console.log('AuthContext: Blockchain connection status:', isConnected);
         
-        // If we have stored session data, restore it
-        const savedSession = sessionStorage.getItem(AUTH_SESSION_KEY);
-        if (savedSession) {
-          try {
-            const parsed = JSON.parse(savedSession);
-            console.log('AuthContext: Found saved session data', parsed);
-            if (parsed.user) {
-              setUser(parsed.user);
-              setPortfolio(parsed.portfolio || mockPortfolio);
-              setWalletAddress(parsed.user.walletAddress || account?.address);
-              console.log('AuthContext: Restored user from session:', parsed.user);
+        if (isConnected) {
+          // We're connected via blockchain utils
+          setIsAuthenticated(true);
+          
+          // If we have stored session data, restore it
+          const savedSession = localStorage.getItem(AUTH_SESSION_KEY);
+          if (savedSession) {
+            try {
+              const parsed = JSON.parse(savedSession);
+              console.log('AuthContext: Found saved session data', parsed);
+              if (parsed.user) {
+                setUser(parsed.user);
+                setPortfolio(parsed.portfolio || mockPortfolio);
+                setWalletAddress(parsed.user.walletAddress || account?.address);
+                console.log('AuthContext: Restored user from session:', parsed.user);
+                setInitializationComplete(true);
+                return;
+              }
+            } catch (error) {
+              console.error("Error parsing saved session:", error);
+              localStorage.removeItem(AUTH_SESSION_KEY);
             }
-          } catch (error) {
-            console.error("Error parsing saved session:", error);
-            sessionStorage.removeItem(AUTH_SESSION_KEY);
           }
-        } else {
+          
           // We're connected but have no session data
           // Let's create a user from the database
           console.log('AuthContext: Connected but no session data. Creating user from database...');
@@ -113,15 +132,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 walletBalance: 25000,
                 bio: dbUser.bio,
                 followers: dbUser.followers,
-                following: dbUser.following
+                following: dbUser.following,
+                walletAddress: account.address
               };
               
               setUser(userProfile);
               setPortfolio(mockPortfolio);
               setWalletAddress(account.address);
               
-              // Save to session
-              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+              // Save to localStorage instead of sessionStorage for persistence
+              localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
                 user: userProfile,
                 portfolio: mockPortfolio
               }));
@@ -134,13 +154,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: '',
                 avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
                 walletBalance: 25000,
+                walletAddress: account.address
               };
               
               setUser(userProfile);
               setPortfolio(mockPortfolio);
               setWalletAddress(account.address);
               
-              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+              localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
                 user: userProfile,
                 portfolio: mockPortfolio
               }));
@@ -167,14 +188,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     walletBalance: 25000,
                     bio: dbUser.bio,
                     followers: dbUser.followers,
-                    following: dbUser.following
+                    following: dbUser.following,
+                    walletAddress: obtainedAccount.address
                   };
                   
                   setUser(userProfile);
                   setPortfolio(mockPortfolio);
                   setWalletAddress(obtainedAccount.address);
                   
-                  sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                  // Save to localStorage
+                  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
                     user: userProfile,
                     portfolio: mockPortfolio
                   }));
@@ -187,176 +210,104 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     email: '',
                     avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
                     walletBalance: 25000,
+                    walletAddress: obtainedAccount.address
                   };
                   
                   setUser(userProfile);
                   setPortfolio(mockPortfolio);
                   setWalletAddress(obtainedAccount.address);
                   
-                  sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
                     user: userProfile,
                     portfolio: mockPortfolio
                   }));
                 }
               }
             } catch (error) {
-              console.error("Error getting account from blockchain:", error);
+              console.error('Error getting account from blockchain:', error);
             }
-          }
-        }
-      } else {
-        // Check ThirdWeb's state
-        if (wallet && account) {
-          // Connected via ThirdWeb but not in our state
-          // Update our connection tracking
-          console.log('AuthContext: Connected via ThirdWeb but not in our blockchain state');
-          try {
-            await connectUserWallet();
-            setIsAuthenticated(true);
-            setWalletAddress(account.address);
-            
-            // Create user profile from ThirdWeb account using database
-            console.log('AuthContext: Creating user from ThirdWeb account');
-            try {
-              const dbUser = await linkWalletToUser(account.address, {
-                name: 'Connected User',
-                avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-              });
-              
-              const userProfile: UserProfile = {
-                id: dbUser.id,
-                name: dbUser.name,
-                email: '',
-                avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
-                walletBalance: 25000,
-                bio: dbUser.bio,
-                followers: dbUser.followers,
-                following: dbUser.following
-              };
-              
-              setUser(userProfile);
-              setPortfolio(mockPortfolio);
-              
-              // Save to session
-              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-                user: userProfile,
-                portfolio: mockPortfolio
-              }));
-            } catch (error) {
-              console.error('Error creating user from database:', error);
-              // Fallback
-              const userProfile: UserProfile = {
-                id: account.address,
-                name: 'Connected User',
-                email: '',
-                avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-                walletBalance: 25000,
-              };
-              
-              setUser(userProfile);
-              setPortfolio(mockPortfolio);
-              
-              sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-                user: userProfile,
-                portfolio: mockPortfolio
-              }));
-            }
-          } catch (error) {
-            console.error("Error syncing wallet state:", error);
           }
         } else {
-          // Not connected anywhere
-          console.log('AuthContext: Not connected anywhere. Clearing state.');
-          setIsAuthenticated(false);
-          setUser(null);
-          setPortfolio(null);
-          setWalletAddress(null);
-          sessionStorage.removeItem(AUTH_SESSION_KEY);
+          // Check ThirdWeb's state
+          if (wallet && account) {
+            // Connected via ThirdWeb but not in our state
+            // Update our connection tracking
+            console.log('AuthContext: Connected via ThirdWeb but not in our blockchain state');
+            try {
+              await connectUserWallet();
+              setIsAuthenticated(true);
+              setWalletAddress(account.address);
+              
+              // Create user profile from ThirdWeb account using database
+              console.log('AuthContext: Creating user from ThirdWeb account');
+              try {
+                const dbUser = await linkWalletToUser(account.address, {
+                  name: 'Connected User',
+                  avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+                });
+                
+                const userProfile: UserProfile = {
+                  id: dbUser.id,
+                  name: dbUser.name,
+                  email: '',
+                  avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
+                  walletBalance: 25000,
+                  bio: dbUser.bio,
+                  followers: dbUser.followers,
+                  following: dbUser.following,
+                  walletAddress: account.address
+                };
+                
+                setUser(userProfile);
+                setPortfolio(mockPortfolio);
+                
+                // Save to localStorage
+                localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                  user: userProfile,
+                  portfolio: mockPortfolio
+                }));
+              } catch (error) {
+                console.error('Error creating user from database:', error);
+                // Fallback
+                const userProfile: UserProfile = {
+                  id: account.address,
+                  name: 'Connected User',
+                  email: '',
+                  avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+                  walletBalance: 25000,
+                  walletAddress: account.address
+                };
+                
+                setUser(userProfile);
+                setPortfolio(mockPortfolio);
+                
+                localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+                  user: userProfile,
+                  portfolio: mockPortfolio
+                }));
+              }
+            } catch (error) {
+              console.error("Error syncing wallet state:", error);
+            }
+          } else {
+            // Not connected anywhere
+            console.log('AuthContext: Not connected anywhere. Clearing state.');
+            setIsAuthenticated(false);
+            setUser(null);
+            setPortfolio(null);
+            setWalletAddress(null);
+            localStorage.removeItem(AUTH_SESSION_KEY);
+          }
         }
+      } catch (error) {
+        console.error('Error during auth initialization:', error);
+      } finally {
+        setInitializationComplete(true);
       }
     };
     
     initAuthState();
-    
-    // Check connection status periodically
-    const interval = setInterval(async () => {
-      const connected = await isUserConnected();
-      setIsAuthenticated(connected);
-    }, 3000);
-    
-    return () => clearInterval(interval);
-  }, [wallet, account]);
-
-  // Update user profile when authentication state changes
-  useEffect(() => {
-    console.log('AuthContext: authentication state change detected', { isAuthenticated, account });
-    
-    if (isAuthenticated && account) {
-      console.log('AuthContext: Creating user profile from account', account);
-      
-      // Create or find user in database using wallet address
-      const createUserProfile = async () => {
-        try {
-          const dbUser = await linkWalletToUser(account.address, {
-            name: 'Connected User',
-            avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-          });
-          
-          // Create user profile from database user
-          const userProfile: UserProfile = {
-            id: dbUser.id, // Use the UUID from database
-            name: dbUser.name,
-            email: '',  // We may not have access to email directly
-            avatar: dbUser.avatar || 'https://randomuser.me/api/portraits/men/1.jpg',
-            walletBalance: 25000, // Mock wallet balance
-            bio: dbUser.bio,
-            followers: dbUser.followers,
-            following: dbUser.following
-          };
-          
-          console.log('AuthContext: Setting user profile from database', userProfile);
-          setUser(userProfile);
-          setPortfolio(mockPortfolio);
-          setWalletAddress(account.address);
-          
-          // Save to session storage
-          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-            user: userProfile,
-            portfolio: mockPortfolio
-          }));
-          console.log('AuthContext: Saved user session to storage');
-        } catch (error) {
-          console.error('Error creating/finding user in database:', error);
-          // Fallback to local user creation if database fails
-          const userProfile: UserProfile = {
-            id: account.address, // Fallback to wallet address
-            name: 'Connected User',
-            email: '',
-            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-            walletBalance: 25000,
-          };
-          
-          setUser(userProfile);
-          setPortfolio(mockPortfolio);
-          setWalletAddress(account.address);
-          
-          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-            user: userProfile,
-            portfolio: mockPortfolio
-          }));
-        }
-      };
-      
-      createUserProfile();
-    } else if (!isAuthenticated) {
-      // Clear user data if not authenticated
-      console.log('AuthContext: Not authenticated, clearing user data');
-      setUser(null);
-      setPortfolio(null);
-      setWalletAddress(null);
-      sessionStorage.removeItem(AUTH_SESSION_KEY);
-    }
-  }, [isAuthenticated, account]);
+  }, [wallet, account, autoConnectData, initializationComplete]);
 
   // Centralized function to connect wallet
   const connectWallet = async () => {
@@ -388,14 +339,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             walletBalance: 25000,
             bio: dbUser.bio,
             followers: dbUser.followers,
-            following: dbUser.following
+            following: dbUser.following,
+            walletAddress: account.address
           };
           
           setUser(userProfile);
           setPortfolio(mockPortfolio);
           
-          // Save to session
-          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+          // Save to localStorage
+          localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
             user: userProfile,
             portfolio: mockPortfolio
           }));
@@ -409,12 +361,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: '',
             avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
             walletBalance: 25000,
+            walletAddress: account.address
           };
           
           setUser(userProfile);
           setPortfolio(mockPortfolio);
           
-          sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+          localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
             user: userProfile,
             portfolio: mockPortfolio
           }));
@@ -432,18 +385,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Logout function using thirdweb
-  const logout = () => {
-    if (wallet) {
-      disconnect(wallet);
+  const logout = async () => {
+    try {
+      console.log('AuthContext: Starting logout process...');
+      
+      // Disconnect from thirdweb first
+      if (wallet) {
+        await disconnect(wallet);
+        console.log('AuthContext: Disconnected from thirdweb wallet');
+      }
+      
+      // Always disconnect in our utils
+      await disconnectUserWallet();
+      console.log('AuthContext: Disconnected from blockchain utils');
+      
+      // Clear all state immediately
+      setIsAuthenticated(false);
+      setUser(null);
+      setPortfolio(null);
+      setWalletAddress(null);
+      setIsConnecting(false);
+      setInitializationComplete(false);
+      
+      // Clear session storage
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      console.log('AuthContext: Cleared all state and storage');
+      
+      // Force UI update
+      triggerUpdate();
+      
+      // Force a small delay to ensure all async operations complete
+      setTimeout(() => {
+        console.log('AuthContext: Logout complete');
+        triggerUpdate(); // Second update to ensure everything is cleared
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Even if there's an error, clear the state
+      setIsAuthenticated(false);
+      setUser(null);
+      setPortfolio(null);
+      setWalletAddress(null);
+      setIsConnecting(false);
+      setInitializationComplete(false);
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      triggerUpdate();
     }
-    // Always disconnect in our utils
-    disconnectUserWallet();
-    // Clear session
-    sessionStorage.removeItem(AUTH_SESSION_KEY);
-    setUser(null);
-    setPortfolio(null);
-    setWalletAddress(null);
-    setIsAuthenticated(false);
   };
 
   return (

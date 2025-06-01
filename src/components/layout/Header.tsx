@@ -2,18 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, Search, ChevronDown, User, Settings, LogOut, Wallet } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import { ClaimButton, ConnectButton } from "thirdweb/react";
-import { createWallet } from "thirdweb/wallets";
-import { sepolia } from 'thirdweb/chains';
-import { getOwnedTokenIds } from 'thirdweb/extensions/erc721';
-
-const wallets = [
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  createWallet("me.rainbow"),
-  createWallet("io.rabby"),
-  createWallet("io.zerion.wallet"),
-];
 
 // Fallback images
 const FALLBACK_LOGO = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0iIzQ5NDZlNSIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiPkE8L3RleHQ+Cjwvc3ZnPgo=';
@@ -27,6 +15,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const { isAuthenticated, user, logout, connectWallet } = useAuth();
   const [logoError, setLogoError] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -119,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             onClick={() => onNavigate('/')}
           >
             <img 
-              src={logoError ? FALLBACK_LOGO : "/logo.png"} 
+              src="/logo.jpg" 
               alt="Akreage Logo" 
               className="w-8 h-8 object-contain"
               onError={() => setLogoError(true)}

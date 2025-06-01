@@ -19,7 +19,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 15000000]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   
   // Get unique locations from properties
@@ -57,7 +57,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
   };
   
   const clearFilters = () => {
-    setPriceRange([0, 200000]);
+    setPriceRange([0, 15000000]);
     setSelectedLocations([]);
   };
   
@@ -110,8 +110,8 @@ const NFTGrid: React.FC<NFTGridProps> = ({
                 <input 
                   type="range" 
                   min="0" 
-                  max="200000" 
-                  step="5000"
+                  max="15000000" 
+                  step="100000"
                   value={priceRange[1]}
                   onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"

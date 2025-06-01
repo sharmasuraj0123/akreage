@@ -10,14 +10,14 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
   return (
-    <div className="py-16 md:py-24" style={{ backgroundImage: 'url("/images/background.gif")', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+    <div className="py-16 md:py-24 bg-gradient-to-br from-indigo-600 to-purple-700" style={{ backgroundImage: 'url("/images/background.gif")', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
               Buidl the Future, One Akre at a Time
             </h1>
-            <p className="text-xl text-white mb-8">
+            <p className="text-xl text-white mb-8 drop-shadow-md">
               Invest in Global Infrastructure projects; hotels, condos, stadiums and more using {ausdToken.name} ({ausdToken.symbol}).
             </p>
             <div className="flex flex-col sm:flex-row gap-4">

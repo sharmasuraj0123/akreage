@@ -205,7 +205,7 @@ function App() {
             <div className="container mx-auto px-4 py-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Properties</h2>
               <NFTGrid 
-                properties={displayAssets.slice(0, 3)}
+                properties={displayAssets}
                 onPropertyClick={handlePropertyClick}
                 onLikeProperty={handleLikeProperty}
                 likedProperties={likedProperties}
@@ -267,7 +267,7 @@ function App() {
               onPropertyClick={handlePropertyClick}
               onLikeProperty={handleLikeProperty}
               likedProperties={likedProperties}
-              featuredProperties={displayAssets.slice(0, 6)}
+              featuredProperties={displayAssets}
             />
           );
         }
@@ -299,7 +299,7 @@ function App() {
           <>
             <Hero onExplore={handleExplore} onCreate={handleCreate} />
             <NFTGrid 
-              properties={displayAssets.slice(0, 6)}
+              properties={displayAssets}
               onPropertyClick={handlePropertyClick}
               onLikeProperty={handleLikeProperty}
               likedProperties={likedProperties}

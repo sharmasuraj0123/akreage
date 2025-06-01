@@ -104,13 +104,13 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div 
-            className="flex items-center space-x-2 cursor-pointer"
+            className="flex items-center space-x-3 cursor-pointer"
             onClick={() => onNavigate('/')}
           >
             <img 
               src="/logo.png" 
-              alt="Akreage Logo" 
-              className="w-8 h-8 object-contain"
+              alt="Akreage Launchpad Logo" 
+              className="w-10 h-10 object-contain"
               onError={() => setLogoError(true)}
             />
             <span className="text-xl font-bold text-gray-900">Akreage</span>

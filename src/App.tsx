@@ -13,7 +13,7 @@ import ProfilePage from './components/profile/ProfilePage';
 import FundingCard from './components/property/FundingCard';
 import HowItWorksPage from './components/how-it-works/HowItWorksPage';
 import { useAuth } from './context/AuthContext';
-import { mockUsers, mockRealEstateAssets } from './data/mockData';
+import { mockUsers } from './data/mockData';
 import { useAssets } from './hooks/useAssets';
 import { useProjects } from './hooks/useProjects';
 import GovernancePage from './components/governance/GovernancePage';
@@ -41,8 +41,8 @@ function App() {
   console.log('Assets loading:', assetsLoading);
   console.log('Assets error:', assetsError);
   
-  // Use database assets if available, otherwise fallback to mock data
-  const displayAssets = assets.length > 0 ? assets : mockRealEstateAssets;
+  // Use database assets consistently across all pages
+  const displayAssets = assets;
   
   // Find the selected property
   const selectedProperty = selectedPropertyId 
@@ -219,7 +219,7 @@ function App() {
           <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">All Properties</h1>
             <NFTGrid 
-              properties={displayAssets.slice(0, 3)}
+              properties={displayAssets}
               onPropertyClick={handlePropertyClick}
               onLikeProperty={handleLikeProperty}
               likedProperties={likedProperties}

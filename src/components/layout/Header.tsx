@@ -20,7 +20,6 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [logoError, setLogoError] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated, user, logout, client, connectWallet } = useAuth();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -109,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
             onClick={() => onNavigate('/')}
           >
             <img 
-              src="/logo.jpg" 
+              src="/logo.png" 
               alt="Akreage Logo" 
               className="w-8 h-8 object-contain"
               onError={() => setLogoError(true)}

@@ -13,7 +13,7 @@ import ProfilePage from './components/profile/ProfilePage';
 import FundingCard from './components/property/FundingCard';
 import HowItWorksPage from './components/how-it-works/HowItWorksPage';
 import { useAuth } from './context/AuthContext';
-import { mockUsers } from './data/mockData';
+import { mockUsers, mockRealEstateAssets } from './data/mockData';
 import { useAssets } from './hooks/useAssets';
 import { useProjects } from './hooks/useProjects';
 import GovernancePage from './components/governance/GovernancePage';
@@ -36,9 +36,17 @@ function App() {
   const { assets, loading: assetsLoading, error: assetsError } = useAssets();
   const { projects, loading: projectsLoading, error: projectsError } = useProjects();
   
+  // Debug logging
+  console.log('Assets from DB:', assets);
+  console.log('Assets loading:', assetsLoading);
+  console.log('Assets error:', assetsError);
+  
+  // Use database assets if available, otherwise fallback to mock data
+  const displayAssets = assets.length > 0 ? assets : mockRealEstateAssets;
+  
   // Find the selected property
   const selectedProperty = selectedPropertyId 
-    ? assets.find(p => p.id === selectedPropertyId) || null
+    ? displayAssets.find(p => p.id === selectedPropertyId) || null
     : null;
   
   // Find the selected developer
@@ -48,7 +56,7 @@ function App() {
   
   // Get properties by developer
   const propertiesByDeveloper = selectedDeveloperId
-    ? assets.filter(p => p.developer === selectedDeveloperId)
+    ? displayAssets.filter(p => p.developer === selectedDeveloperId)
     : [];
   
   // Get projects by developer
@@ -197,7 +205,7 @@ function App() {
             <div className="container mx-auto px-4 py-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Properties</h2>
               <NFTGrid 
-                properties={mockRealEstateAssets.slice(0, 3)}
+                properties={displayAssets.slice(0, 3)}
                 onPropertyClick={handlePropertyClick}
                 onLikeProperty={handleLikeProperty}
                 likedProperties={likedProperties}
@@ -211,17 +219,17 @@ function App() {
           <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">All Properties</h1>
             <NFTGrid 
-              properties={mockRealEstateAssets.slice(0, 3)}
+              properties={displayAssets.slice(0, 3)}
               onPropertyClick={handlePropertyClick}
               onLikeProperty={handleLikeProperty}
               likedProperties={likedProperties}
             />
-          </>
+          </div>
         );
       case '/marketplace':
         return (
           <NFTGrid 
-            properties={assets}
+            properties={displayAssets}
             onPropertyClick={handlePropertyClick}
             onLikeProperty={handleLikeProperty}
             likedProperties={likedProperties}
@@ -259,7 +267,7 @@ function App() {
               onPropertyClick={handlePropertyClick}
               onLikeProperty={handleLikeProperty}
               likedProperties={likedProperties}
-              featuredProperties={assets.slice(0, 6)}
+              featuredProperties={displayAssets.slice(0, 6)}
             />
           );
         }
@@ -291,7 +299,7 @@ function App() {
           <>
             <Hero onExplore={handleExplore} onCreate={handleCreate} />
             <NFTGrid 
-              properties={assets.slice(0, 6)}
+              properties={displayAssets.slice(0, 6)}
               onPropertyClick={handlePropertyClick}
               onLikeProperty={handleLikeProperty}
               likedProperties={likedProperties}

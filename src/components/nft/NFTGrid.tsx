@@ -101,7 +101,7 @@ const NFTGrid: React.FC<NFTGridProps> = ({
               {/* Price Range Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price Range (AUSD)
+                  Total Raise Range (AUSD)
                 </label>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-500">{formatCurrency(priceRange[0])}</span>

@@ -60,8 +60,17 @@ const BuilderLanding: React.FC<BuilderLandingProps> = ({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24">
-        <div className="container mx-auto px-4">
+      <div className="relative py-16 md:py-24 overflow-hidden">
+        {/* Background GIF */}
+        <img
+          src="/background.gif"
+          alt="Background animation"
+          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+          style={{ filter: 'brightness(0.6)' }}
+        />
+        {/* Optional overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-white opacity-80 z-10"></div>
+        <div className="container mx-auto px-4 relative z-20">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Build the Future of <span className="text-indigo-600">Real Estate</span>

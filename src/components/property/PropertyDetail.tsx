@@ -509,8 +509,8 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
                 <span className="text-xl font-bold text-gray-900">{formatCurrency(property.price)} AUSD</span>
               </div>
               <div className="text-right">
-                <span className="block text-sm text-gray-500">Token Symbol</span>
-                <span className="text-xl font-bold text-indigo-600">{property.tokenSymbol}</span>
+                <span className="block text-sm text-gray-500">Minimum Investment</span>
+                <span className="text-xl font-bold text-indigo-600">$1000 AUSD</span>
               </div>
             </div>
             

@@ -9,6 +9,8 @@ import {
   Building2,
   Calendar,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import GovernanceInfoPage from './GovernanceInfoPage';
 
 const stats = [
   {
@@ -132,6 +134,7 @@ const CountdownClock: React.FC<{ deadline: string }> = ({ deadline }) => {
 };
 
 const GovernancePage: React.FC = () => {
+  const { isAuthenticated, connectWallet } = useAuth();
   const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
   const [vote, setVote] = useState<'approve' | 'reject' | null>(null);
   const [showNotification, setShowNotification] = useState(false);
@@ -154,6 +157,11 @@ const GovernancePage: React.FC = () => {
   ]);
   const [newComment, setNewComment] = useState('');
   const [posting, setPosting] = useState(false);
+
+  // If user is not authenticated, show the info page
+  if (!isAuthenticated) {
+    return <GovernanceInfoPage onLogin={connectWallet} />;
+  }
 
   const selectedProposal = pendingApprovals.find(p => p.id === selectedProposalId) || null;
 

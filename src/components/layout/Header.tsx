@@ -114,6 +114,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
               onError={() => setLogoError(true)}
             />
             <span className="text-xl font-bold text-gray-900">Akreage</span>
+            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-200 text-yellow-800 border border-yellow-300">Test Mode</span>
           </div>
 
           {/* Desktop Navigation */}

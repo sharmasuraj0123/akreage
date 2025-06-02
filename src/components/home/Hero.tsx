@@ -10,8 +10,17 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
   return (
-    <div className="py-16 md:py-24 bg-gradient-to-br from-indigo-600 to-purple-700" style={{ backgroundImage: 'url("/images/background.gif")', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      <div className="container mx-auto px-4">
+    <div className="relative py-16 md:py-24 overflow-hidden">
+      {/* Background GIF */}
+      <img
+        src="/background.gif"
+        alt="Background animation"
+        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+        style={{ filter: 'brightness(0.6)' }}
+      />
+      {/* Optional overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 opacity-10 z-10"></div>
+      <div className="container mx-auto px-4 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">
@@ -39,17 +48,17 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
               <div className="grid grid-cols-3 gap-6">
                 <div className="bg-indigo-50 p-4 rounded-xl flex flex-col items-center justify-center text-center">
                   <div className="text-sm text-gray-500">Total Value Locked</div>
-                  <div className="text-2xl font-bold text-gray-900 mt-1">42.5M</div>
+                  <div className="text-2xl font-bold text-gray-900 mt-1">10M</div>
                   <div className="text-sm font-medium text-gray-900">AUSD</div>
                 </div>
                 <div className="bg-indigo-50 p-4 rounded-xl flex flex-col items-center justify-center text-center">
                   <div className="text-sm text-gray-500">Active Projects</div>
-                  <div className="text-2xl font-bold text-gray-900 mt-1">24</div>
+                  <div className="text-2xl font-bold text-gray-900 mt-1">6</div>
                   <div className="text-sm font-medium text-gray-900">&nbsp;</div>
                 </div>
                 <div className="bg-indigo-50 p-4 rounded-xl flex flex-col items-center justify-center text-center">
                   <div className="text-sm text-gray-500">Investors</div>
-                  <div className="text-2xl font-bold text-gray-900 mt-1">12.4K</div>
+                  <div className="text-2xl font-bold text-gray-900 mt-1">10</div>
                   <div className="text-sm font-medium text-gray-900">&nbsp;</div>
                 </div>
               </div>

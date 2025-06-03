@@ -1,5 +1,13 @@
 # Builder Authentication States
 
+> This document describes the builder authentication flow for the [Akreage platform](./README.md).
+
+## Table of Contents
+- [Overview](#overview)
+- [Logged Out State](#logged-out-state)
+- [Logged In State](#logged-in-state)
+- [Implementation Details](#implementation-details)
+
 ## Overview
 
 The Builder section now has two distinct states based on user authentication:

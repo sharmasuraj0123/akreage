@@ -1,10 +1,18 @@
 # Supabase Database Setup Guide
 
+> This guide is part of the [Akreage platform documentation](./README.md). For a complete overview of the project, see the main README.
+
+## Table of Contents
+- [Environment Variables](#1-environment-variables)
+- [Database Setup](#2-database-setup)
+- [Verify Setup](#3-verify-setup)
+- [Important Notes](#important-notes)
+
 ## 1. Environment Variables
 
 Create a `.env` file in your project root with the following variables:
 
-```env
+```bash
 VITE_SUPABASE_URL=https://oflhmuhwknhekdbacbgq.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mbGhtdWh3a25oZWtkYmFjYmdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1NTM3MDQsImV4cCI6MjA2NDEyOTcwNH0.qifMZ7i3HSnxNYW02MYM97CBe-LmpzXdAKu7Vf0H6_Q
 ```

@@ -1,5 +1,13 @@
 # Wallet Authentication Implementation Summary
 
+> This document details the wallet authentication implementation for the [Akreage platform](./README.md).
+
+## Table of Contents
+- [What We've Implemented](#what-weve-implemented)
+- [How It Works](#how-it-works)
+- [Testing Instructions](#testing-instructions)
+- [Files Modified](#files-modified)
+
 ## What We've Implemented
 
 ### 1. Database Schema Updates ✅
@@ -33,9 +41,9 @@
 
 ### 5. Documentation ✅
 
-**Created `WALLET_AUTHENTICATION.md`:**
-- Complete flow documentation
-- Setup instructions
+**Created comprehensive documentation:**
+- Complete flow documentation in this summary
+- Setup instructions in [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)
 - Security considerations
 - Troubleshooting guide
 
@@ -69,7 +77,10 @@
 
 ### 2. Test the Implementation
 
-1. Start development server: `npm run dev`
+1. Start development server: 
+   ```bash
+   npm run dev
+   ```
 2. Click "Login with Google" 
 3. Complete wallet connection
 4. Check Supabase dashboard to see user created with wallet address
@@ -92,8 +103,8 @@ Check that users table has:
 - `src/context/AuthContext.tsx` - Updated authentication flow
 
 ### Files Created:
-- `WALLET_AUTHENTICATION.md` - Complete documentation
 - `IMPLEMENTATION_SUMMARY.md` - This summary
+- `BUILDER_AUTHENTICATION.md` - Builder authentication documentation
 
 ### Files Removed:
 - Migration scripts (not needed since recreating database)

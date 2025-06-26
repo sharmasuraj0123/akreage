@@ -3,6 +3,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Hero from './components/home/Hero';
 import NFTGrid from './components/nft/NFTGrid';
+import NFTLandingPage from './components/nft/NFTLandingPage';
 import PropertyDetail from './components/property/PropertyDetail';
 import DevelopersGrid from './components/developer/DevelopersGrid';
 import DeveloperDetail from './components/developer/DeveloperDetail';
@@ -229,6 +230,15 @@ function App() {
       case '/marketplace':
         return (
           <NFTGrid 
+            properties={displayAssets}
+            onPropertyClick={handlePropertyClick}
+            onLikeProperty={handleLikeProperty}
+            likedProperties={likedProperties}
+          />
+        );
+      case '/nfts':
+        return (
+          <NFTLandingPage 
             properties={displayAssets}
             onPropertyClick={handlePropertyClick}
             onLikeProperty={handleLikeProperty}

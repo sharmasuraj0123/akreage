@@ -70,7 +70,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# Note: public directory kept for Vite static assets
 
 # vuepress build output
 .vuepress/dist

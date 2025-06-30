@@ -10,7 +10,10 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24">
+    <div
+      className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative"
+      style={{ backgroundImage: 'url(/background.gi)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
+    >
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>

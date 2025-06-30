@@ -12,8 +12,13 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
   return (
     <div
       className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative"
-      style={{ backgroundImage: 'url(/background.gi)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
     >
+    <img
+        src="/background.gif"
+        alt="Background animation"
+        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+        style={{ filter: 'brightness(0.6)' }}
+      />
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>

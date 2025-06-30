@@ -14,7 +14,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
       className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative"
     >
     <img
-        src="/background.gif"
+        src="/background.gi"
         alt="Background animation"
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
         style={{ filter: 'brightness(0.6)' }}

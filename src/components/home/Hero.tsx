@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import Button from '../ui/Button';
 import { ausdToken } from '../../data/mockData';
@@ -9,16 +9,78 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
+  const [backgroundError, setBackgroundError] = useState(false);
+
+  // Inline SVG background as data URL
+  const svgBackgroundDataUrl = `data:image/svg+xml;base64,${btoa(`
+    <svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.1">
+            <animate attributeName="stop-opacity" values="0.1;0.3;0.1" dur="4s" repeatCount="indefinite"/>
+          </stop>
+          <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:0.15">
+            <animate attributeName="stop-opacity" values="0.15;0.35;0.15" dur="3s" repeatCount="indefinite"/>
+          </stop>
+          <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:0.1">
+            <animate attributeName="stop-opacity" values="0.1;0.25;0.1" dur="5s" repeatCount="indefinite"/>
+          </stop>
+        </linearGradient>
+        <linearGradient id="bg2" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:0.05">
+            <animate attributeName="stop-opacity" values="0.05;0.2;0.05" dur="6s" repeatCount="indefinite"/>
+          </stop>
+          <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.08">
+            <animate attributeName="stop-opacity" values="0.08;0.25;0.08" dur="4.5s" repeatCount="indefinite"/>
+          </stop>
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#bg1)"/>
+      <rect width="100%" height="100%" fill="url(#bg2)"/>
+      <circle cx="200" cy="200" r="50" fill="#6366f1" opacity="0.1">
+        <animateTransform attributeName="transform" type="translate" values="0,0; 100,50; 0,0" dur="8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.1;0.3;0.1" dur="8s" repeatCount="indefinite"/>
+      </circle>
+      <rect x="1600" y="800" width="80" height="80" fill="#8b5cf6" opacity="0.15" rx="10">
+        <animateTransform attributeName="transform" type="translate" values="0,0; -80,-30; 0,0" dur="10s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.15;0.35;0.15" dur="10s" repeatCount="indefinite"/>
+      </rect>
+      <polygon points="1000,100 1100,300 900,300" fill="#06b6d4" opacity="0.1">
+        <animateTransform attributeName="transform" type="translate" values="0,0; 50,100; 0,0" dur="12s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.1;0.25;0.1" dur="12s" repeatCount="indefinite"/>
+      </polygon>
+    </svg>
+  `)}`;
+
   return (
     <div
-      className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative"
+      className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative overflow-hidden"
     >
-    <img
+      
+      {/* Background with fallback to SVG */}
+      <img
         src="/background.gif"
         alt="Background animation"
-        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+        className={`absolute inset-0 w-full h-full object-cover z-0 pointer-events-none ${
+          backgroundError ? 'hidden' : 'block'
+        }`}
         style={{ filter: 'brightness(0.6)' }}
+        onError={() => setBackgroundError(true)}
+        onLoad={() => setBackgroundError(false)}
       />
+      
+      {/* SVG fallback when GIF fails to load */}
+      {backgroundError && (
+        <div 
+          className="absolute inset-0 w-full h-full z-0 pointer-events-none"
+          style={{ 
+            backgroundImage: `url(${svgBackgroundDataUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'brightness(0.6)'
+          }}
+        />
+      )}
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>

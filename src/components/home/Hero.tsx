@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import Button from '../ui/Button';
 import { ausdToken } from '../../data/mockData';
@@ -9,16 +9,38 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
+  const [backgroundError, setBackgroundError] = useState(false);
+
   return (
     <div
-      className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative"
+      className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative overflow-hidden"
     >
-    <img
+      
+      {/* Background with fallback to SVG */}
+      <img
         src="/background.gif"
         alt="Background animation"
-        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+        className={`absolute inset-0 w-full h-full object-cover z-0 pointer-events-none ${
+          backgroundError ? 'hidden' : 'block'
+        }`}
         style={{ filter: 'brightness(0.6)' }}
+        onError={() => setBackgroundError(true)}
+        onLoad={() => setBackgroundError(false)}
       />
+      
+      {/* SVG fallback when GIF fails to load */}
+      {backgroundError && (
+        <object 
+          data="/background.svg"
+          type="image/svg+xml"
+          className="absolute inset-0 w-full h-full z-0 pointer-events-none"
+          style={{ filter: 'brightness(0.6)' }}
+          aria-label="Animated background"
+        >
+          {/* Final fallback to gradient */}
+          <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-100 via-blue-50 to-purple-50 opacity-30 z-0" />
+        </object>
+      )}
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>

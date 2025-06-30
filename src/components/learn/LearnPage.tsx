@@ -150,6 +150,14 @@ const LearnPage: React.FC<LearnPageProps> = ({ onResourceClick }) => {
                 src="https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" 
                 alt="Featured resource" 
                 className="h-64 w-full object-cover md:h-full"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<div class="h-64 md:h-full w-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center"><div class="text-white text-center"><div class="text-4xl mb-2">📚</div><div class="text-lg font-medium">Featured Resource</div></div></div>';
+                  }
+                }}
               />
             </div>
             <div className="p-8 md:w-1/2 flex flex-col justify-center">
@@ -186,6 +194,15 @@ const LearnPage: React.FC<LearnPageProps> = ({ onResourceClick }) => {
                   src={resource.image} 
                   alt={resource.title} 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const typeIcon = resource.type === 'video' ? '🎥' : resource.type === 'guide' ? '📖' : '📄';
+                      parent.innerHTML = `<div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"><div class="text-center"><div class="text-3xl mb-2">${typeIcon}</div><div class="text-sm text-gray-600">Image unavailable</div></div></div>`;
+                    }
+                  }}
                 />
                 <div className="absolute top-4 left-4 bg-white rounded-full py-1 px-3 flex items-center">
                   {getTypeIcon(resource.type)}

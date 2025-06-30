@@ -72,6 +72,14 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
           src={property.image} 
           alt={property.name} 
           className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              parent.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"><div class="text-center"><div class="text-3xl mb-2">🏢</div><div class="text-sm text-gray-600">Image unavailable</div></div></div>';
+            }
+          }}
         />
         <button 
           className={`absolute top-3 right-3 p-2 rounded-full ${

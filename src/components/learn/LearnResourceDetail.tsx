@@ -62,6 +62,14 @@ const LearnResourceDetail: React.FC<LearnResourceDetailProps> = ({ onBack, resou
             src="https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" 
             alt="Real Estate Tokenization" 
             className="w-full h-auto rounded-xl"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                parent.innerHTML = '<div class="w-full h-64 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center"><div class="text-center"><div class="text-4xl mb-3">📚</div><div class="text-lg font-medium text-gray-700">Real Estate Tokenization</div><div class="text-sm text-gray-500">Image unavailable</div></div></div>';
+              }
+            }}
           />
         </div>
         

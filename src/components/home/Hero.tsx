@@ -11,15 +11,13 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({ onExplore, onCreate }) => {
   return (
     <div
-      className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative"
+      className="bg-gradient-to-br from-indigo-50 to-white py-16 md:py-24 relative overflow-hidden"
     >
-    <img
-        src="/background.gi"
-        alt="Background animation"
-        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-        style={{ filter: 'brightness(0.6)' }}
-      />
-      <div className="container mx-auto px-4">
+      {/* Background decoration elements */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-100 rounded-full -translate-x-32 -translate-y-32 opacity-30"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-100 rounded-full translate-x-48 translate-y-48 opacity-30"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">

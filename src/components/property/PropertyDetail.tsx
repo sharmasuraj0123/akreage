@@ -355,6 +355,14 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({
               src={images[currentImage]} 
               alt={property.name} 
               className="w-full h-auto object-cover transition-all duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = '<div class="w-full h-64 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"><div class="text-center"><div class="text-4xl mb-3">🏢</div><div class="text-lg font-medium text-gray-600">Property Image</div><div class="text-sm text-gray-500">Image unavailable</div></div></div>';
+                }
+              }}
             />
             {images.length > 1 && (
               <>

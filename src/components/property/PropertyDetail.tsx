@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Heart, MapPin, Calendar, TrendingUp, Home, Maximize2, BedDouble, Bath, CheckCircle, Loader, Clock, X, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { RealEstateAsset, Milestone } from '../../types';
 import Button from '../ui/Button';
 import { formatCurrency, formatDate } from '../../utils/formatters';
@@ -55,8 +56,20 @@ const PurchaseModal: React.FC<{
   };
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+    <motion.div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div 
+        className="bg-white rounded-lg p-6 w-full max-w-md"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+      >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold">Purchase NFT Tokens</h3>
           <button 
@@ -129,8 +142,8 @@ const PurchaseModal: React.FC<{
             )}
           </Button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

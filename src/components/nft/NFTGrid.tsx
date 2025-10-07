@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import NFTCard from './NFTCard';
 import { RealEstateAsset } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
@@ -193,20 +194,36 @@ const NFTGrid: React.FC<NFTGridProps> = ({
       </div>
       
       {propertiesWithLikes.length === 0 ? (
-        <div className="text-center py-12">
+        <motion.div 
+          className="text-center py-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <p className="text-gray-500">No properties found matching your criteria.</p>
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {propertiesWithLikes.map(property => (
-            <NFTCard 
-              key={property.id} 
-              property={property} 
-              onLike={onLikeProperty}
-              onClick={onPropertyClick}
-            />
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, staggerChildren: 0.1 }}
+        >
+          {propertiesWithLikes.map((property, index) => (
+            <motion.div
+              key={property.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+            >
+              <NFTCard 
+                property={property} 
+                onLike={onLikeProperty}
+                onClick={onPropertyClick}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -1,16 +1,35 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-import { createThirdwebClient, getContract, readContract } from 'thirdweb';
+import { getContract, readContract } from 'thirdweb';
 import { sepolia } from 'thirdweb/chains';
-import { Wallet, Clock, DollarSign, PieChart, TrendingUp, Briefcase } from 'lucide-react';
+import { Wallet, PieChart, TrendingUp, Briefcase } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { mockRealEstateAssets } from '../../data/mockData';
 
 // Contract address for the NFT (Skyline Tower from mock data)
 const NFT_CONTRACT_ADDRESS = '0x3680FE6cc714d49F8a78e61D901032792b6fa773';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0
+  }
+};
+
 const PortfolioDashboard: React.FC = () => {
-  const { user, isAuthenticated, walletAddress, client, connectWallet, isConnecting } = useAuth();
+  const { isAuthenticated, walletAddress, client } = useAuth();
   const [userNFTHoldings, setUserNFTHoldings] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [totalValue, setTotalValue] = useState<number>(0);
@@ -128,9 +147,18 @@ const PortfolioDashboard: React.FC = () => {
           </div>
         ) : (
           <div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
               {/* Total Portfolio Value */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+              <motion.div 
+                className="bg-gray-50 rounded-lg p-4 border border-gray-100"
+                variants={cardVariants}
+                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+              >
                 <div className="flex items-start">
                   <div className="bg-indigo-100 rounded-full p-2 mr-3">
                     <Briefcase className="h-5 w-5 text-indigo-600" />
@@ -142,10 +170,14 @@ const PortfolioDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
               {/* Wallet Address */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+              <motion.div 
+                className="bg-gray-50 rounded-lg p-4 border border-gray-100"
+                variants={cardVariants}
+                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+              >
                 <div className="flex items-start">
                   <div className="bg-indigo-100 rounded-full p-2 mr-3">
                     <Wallet className="h-5 w-5 text-indigo-600" />
@@ -157,10 +189,14 @@ const PortfolioDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
               {/* Total Properties */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+              <motion.div 
+                className="bg-gray-50 rounded-lg p-4 border border-gray-100"
+                variants={cardVariants}
+                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+              >
                 <div className="flex items-start">
                   <div className="bg-indigo-100 rounded-full p-2 mr-3">
                     <PieChart className="h-5 w-5 text-indigo-600" />
@@ -172,8 +208,8 @@ const PortfolioDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
             
             {/* Investment Summary */}
             {userNFTHoldings > 0 && (

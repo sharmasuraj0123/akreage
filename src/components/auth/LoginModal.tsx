@@ -1,20 +1,12 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { createWallet } from "thirdweb/wallets";
+import { motion } from 'framer-motion';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 
 interface LoginModalProps {
   onClose: () => void;
 }
-
-const wallets = [
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  createWallet("me.rainbow"),
-  createWallet("io.rabby"),
-  createWallet("io.zerion.wallet"),
-];
 
 const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
   const { connectWallet, isConnecting } = useAuth();
@@ -29,8 +21,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
+    <motion.div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div 
+        className="bg-white rounded-lg p-6 w-full max-w-md relative"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -52,8 +56,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
             Connect with your Google account to access the platform
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

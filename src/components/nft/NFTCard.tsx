@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { RealEstateAsset } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { getClaimConditionData } from '../../utils/blockchain';
@@ -24,14 +25,10 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
     ? Number((claimData.supplyClaimed * BigInt(100)) / claimData.maxClaimableSupply)
     : (property.fundingRaised / property.fundingGoal) * 100;
   
-  // Set actual funding raised and goal based on blockchain data when available
+  // Set actual funding raised based on blockchain data when available
   const fundingRaised = claimData 
     ? Number(claimData.supplyClaimed)
     : property.fundingRaised;
-  
-  const fundingGoal = claimData 
-    ? Number(claimData.maxClaimableSupply)
-    : property.fundingGoal;
   
   useEffect(() => {
     // Only fetch blockchain data if this property has an NFT contract address
@@ -63,9 +60,17 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
   };
   
   return (
-    <div 
-      className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-[1.02] hover:shadow-lg"
+    <motion.div 
+      className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer"
       onClick={() => onClick(property.id)}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      whileHover={{ 
+        scale: 1.03,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        transition: { duration: 0.2 }
+      }}
     >
       <div className="relative h-48">
         <img 
@@ -124,7 +129,7 @@ const NFTCard: React.FC<NFTCardProps> = ({ property, onLike, onClick }) => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

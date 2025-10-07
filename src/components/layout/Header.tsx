@@ -1,19 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { Menu, X, Search, User, Settings, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import { ClaimButton, ConnectButton } from "thirdweb/react";
-import { createWallet } from "thirdweb/wallets";
-import { sepolia } from 'thirdweb/chains';
-import { getOwnedTokenIds } from 'thirdweb/extensions/erc721';
-
-const wallets = [
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  createWallet("me.rainbow"),
-  createWallet("io.rabby"),
-  createWallet("io.zerion.wallet"),
-];
 
 interface HeaderProps {
   onNavigate: (path: string) => void;
@@ -23,7 +12,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { isAuthenticated, user, logout, client, connectWallet } = useAuth();
+  const { isAuthenticated, user, logout, connectWallet } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => currentPath === path;
@@ -60,7 +49,13 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
   );
 
   const ProfileMenu = () => (
-    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
+    <motion.div 
+      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200"
+      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
+    >
       <button
         onClick={() => {
           onNavigate('/profile');
@@ -92,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
         <LogOut className="h-4 w-4 mr-2" />
         Sign out
       </button>
-    </div>
+    </motion.div>
   );
 
   const handleLogin = async () => {
@@ -163,7 +158,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
                     </div>
                   </button>
                   
-                  {showProfileMenu && <ProfileMenu />}
+                  <AnimatePresence>
+                    {showProfileMenu && <ProfileMenu />}
+                  </AnimatePresence>
                 </div>
               </div>
             ) : (
@@ -193,8 +190,15 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            className="md:hidden border-t border-gray-200 bg-white"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
           <div className="px-4 py-3 space-y-3">
             <button
               onClick={() => { onNavigate('/'); setIsMenuOpen(false); }}
@@ -273,8 +277,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPath }) => {
               </Button>
             </div>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
